@@ -1,0 +1,35 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# --- Virtual environments ---
+venv/
+.venv/
+env/
+
+# --- Runtime / uploads ---
+temp_uploads/
+
+# --- Model weights & training artifacts ---
+# Trained weights are large binaries that should be regenerated locally by
+# running train_yolo.py, not committed to git.
+*.pt
+*.onnx
+*.engine
+cv_core/models/*/weights/
+cv_core/models/*/*.png
+cv_core/models/*/*.jpg
+cv_core/models/*/*.csv
+cv_core/models/*/args.yaml
+runs/
+
+# Ultralytics dataset cache (auto-regenerated from the label .txt files)
+*.cache
+
+# --- IDE / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

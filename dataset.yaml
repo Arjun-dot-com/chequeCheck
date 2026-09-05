@@ -1,0 +1,13 @@
+path: c:/Users/arjun/Desktop/pyTutirial/OPENCV/chequeCheck/cv_core/data/samples
+train: train.txt
+val: test.txt
+
+# Classes based on object-detection.pbtxt
+names:
+  0: IssueBank
+  1: ReceiverName
+  2: AcNo
+  3: Amt
+  4: ChqNo
+  5: DateIss
+  6: Sign

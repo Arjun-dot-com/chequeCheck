@@ -1,0 +1,22 @@
+opencv-python>=4.8.0
+numpy>=1.24.0
+pytesseract>=0.3.10
+scipy>=1.10.0
+ultralytics>=8.0.0
+fastapi>=0.100.0
+uvicorn>=0.23.0
+python-multipart>=0.0.6
+PyMuPDF>=1.23.0
+
+# NOTE: pytesseract is only a Python wrapper. You must separately install the
+# Tesseract OCR *binary* and make sure it's on your PATH (or set
+# pytesseract.pytesseract.tesseract_cmd in code) for OCR to work:
+#   Windows: https://github.com/UB-Mannheim/tesseract/wiki
+#   macOS:   brew install tesseract
+#   Linux:   apt-get install tesseract-ocr
+
+# NOTE: torch is not listed here directly - it is pulled in automatically as
+# a dependency of ultralytics. If you ever see NumPy 2.x / torch ABI errors
+# ("compiled using NumPy 1.x cannot be run in NumPy 2.x"), it means some
+# other environment/interpreter has an old torch build; reinstalling inside
+# a clean virtualenv (see README) resolves it.
