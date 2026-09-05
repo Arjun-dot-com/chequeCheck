@@ -5,6 +5,7 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from cv_core.pipeline import ChequeProcessingPipeline
+from validation.service import process_validation
 
 app = FastAPI(
     title="ChequeCheck CV API",
@@ -58,6 +59,8 @@ async def scan_cheque(file: UploadFile = File(...)):
             
         # Process the image
         results = pipeline.process_cheque(file_path)
+        validation_result = process_validation(results)
+        results["validation_result"] = validation_result
         
         # Clean up the temporary file
         if os.path.exists(file_path):
