@@ -88,6 +88,8 @@ def process_validation(scan_result):
         "decision": decision,
         "risk_score": min(risk_score, 100),
         "matched": True,
-        "validation": validation_result,
+        "validation_passed": validation_result["passed"],
+        "validation_checks": validation_result["checks"],
+        "validation_failures": validation_result["failures"],
         "reasons": list(dict.fromkeys(fraud_reasons))
     }
