@@ -1,0 +1,43 @@
+[
+  {
+    "account_number": "9876543210",
+    "account_holder": "Rahul Kumar",
+    "bank_name": "Demo Bank",
+    "routing_number": "110002",
+    "status": "active",
+    "cheque_series": "AB",
+    "cheques": [
+      {
+        "cheque_number": "123456",
+        "payee": "ABC Traders",
+        "amount": 25000,
+        "date": "2026-09-05",
+        "status": "unused"
+      },
+      {
+        "cheque_number": "123457",
+        "payee": "XYZ Stores",
+        "amount": 15000,
+        "date": "2026-09-06",
+        "status": "used"
+      }
+    ]
+  },
+  {
+    "account_number": "1234567890",
+    "account_holder": "Priya Sharma",
+    "bank_name": "Demo Bank",
+    "routing_number": "110002",
+    "status": "active",
+    "cheque_series": "CD",
+    "cheques": [
+      {
+        "cheque_number": "654321",
+        "payee": "MNO Enterprises",
+        "amount": 18000,
+        "date": "2026-09-04",
+        "status": "unused"
+      }
+    ]
+  }
+]
