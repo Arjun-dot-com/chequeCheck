@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ChequeAI - Upload</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed-variant": "#38485d",
+                      "inverse-on-surface": "#eff1f3",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-fixed": "#d3e4fe",
+                      "primary-fixed-dim": "#bec6e0",
+                      "on-tertiary-container": "#75859d",
+                      "surface-container-low": "#f2f4f6",
+                      "on-surface-variant": "#45464d",
+                      "surface": "#f7f9fb",
+                      "on-secondary-container": "#fefcff",
+                      "primary": "#000000",
+                      "secondary-fixed": "#d8e2ff",
+                      "on-tertiary": "#ffffff",
+                      "secondary-container": "#2170e4",
+                      "surface-tint": "#565e74",
+                      "inverse-surface": "#2d3133",
+                      "on-primary-fixed": "#131b2e",
+                      "secondary-fixed-dim": "#adc6ff",
+                      "tertiary-fixed-dim": "#b7c8e1",
+                      "on-background": "#191c1e",
+                      "tertiary": "#000000",
+                      "surface-container": "#eceef0",
+                      "primary-fixed": "#dae2fd",
+                      "error": "#ba1a1a",
+                      "on-tertiary-fixed": "#0b1c30",
+                      "outline-variant": "#c6c6cd",
+                      "surface-variant": "#e0e3e5",
+                      "on-primary": "#ffffff",
+                      "surface-bright": "#f7f9fb",
+                      "background": "#f7f9fb",
+                      "surface-dim": "#d8dadc",
+                      "on-secondary": "#ffffff",
+                      "surface-container-highest": "#e0e3e5",
+                      "on-surface": "#191c1e",
+                      "tertiary-container": "#0b1c30",
+                      "on-primary-fixed-variant": "#3f465c",
+                      "on-primary-container": "#7c839b",
+                      "error-container": "#ffdad6",
+                      "primary-container": "#131b2e",
+                      "on-secondary-fixed-variant": "#004395",
+                      "on-error": "#ffffff",
+                      "outline": "#76777d",
+                      "on-error-container": "#93000a",
+                      "on-secondary-fixed": "#001a42",
+                      "inverse-primary": "#bec6e0",
+                      "surface-container-high": "#e6e8ea",
+                      "secondary": "#0058be"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "stack-sm": "8px",
+                      "cell-padding": "12px 16px",
+                      "container-max": "1440px",
+                      "margin-page": "32px",
+                      "gutter": "24px",
+                      "stack-md": "16px",
+                      "stack-lg": "24px",
+                      "stack-xs": "4px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "data-mono": [
+                              "JetBrains Mono"
+                      ],
+                      "label-caps": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "data-mono": [
+                              "13px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-caps": [
+                              "11px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .scanner-beam {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(33, 112, 228, 0.8);
+            box-shadow: 0 0 10px rgba(33, 112, 228, 0.5);
+            animation: scan 2s ease-in-out infinite alternate;
+            display: none;
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+
+        .upload-active {
+            border-color: #2170e4 !important;
+            background-color: #f2f4f6 !important;
+        }
+
+        .processing-pulse {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+      </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md h-screen overflow-hidden flex">
+<!-- SideNavBar -->
+<nav class="bg-surface border-r border-outline-variant h-full w-64 fixed left-0 top-0 flex flex-col py-margin-page hidden md:flex z-50">
+<div class="px-6 mb-8">
+<h1 class="font-headline-sm text-headline-sm font-bold text-on-surface">ChequeAI</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Enterprise Banking</p>
+</div>
+<ul class="flex-grow space-y-2">
+<li>
+<a class="flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-6 py-3 text-secondary font-bold border-r-4 border-secondary bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3">cloud_upload</span>
+<span class="font-body-md text-body-md">Upload</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3">history</span>
+<span class="font-body-md text-body-md">History</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3">assessment</span>
+<span class="font-body-md text-body-md">Reports</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto space-y-2">
+<a class="flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3">help_outline</span>
+<span class="font-body-md text-body-md">Help</span>
+</a>
+<a class="flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mr-3">logout</span>
+<span class="font-body-md text-body-md">Logout</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-grow flex flex-col md:ml-64 relative h-screen">
+<!-- TopAppBar -->
+<header class="bg-surface border-b border-outline-variant docked full-width top-0 sticky z-40 flex justify-between items-center h-16 px-margin-page transition-all duration-300">
+<div class="flex items-center space-x-6">
+<!-- Navigation links hidden on upload focus screen, keep structural for layout -->
+</div>
+<div class="flex items-center space-x-4">
+<button class="text-on-surface-variant hover:text-secondary transition-all duration-300">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-secondary transition-all duration-300">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-grow p-margin-page bg-surface-bright overflow-y-auto">
+<div class="max-w-[1440px] mx-auto">
+<div class="mb-stack-lg">
+<h2 class="font-headline-md text-headline-md text-on-surface">Upload Cheque</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Drag and drop cheque images for AI processing.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Upload/Preview Area (Left/Center) -->
+<div class="lg:col-span-8 flex flex-col space-y-stack-md">
+<!-- Drag & Drop Zone -->
+<div class="border-2 border-dashed border-outline-variant bg-surface-container-lowest rounded-xl p-12 flex flex-col items-center justify-center text-center cursor-pointer transition-colors duration-200 min-h-[400px] relative overflow-hidden group" id="drop-zone">
+<!-- Initial State -->
+<div class="flex flex-col items-center" id="upload-prompt">
+<span class="material-symbols-outlined text-6xl text-on-surface-variant mb-4 group-hover:text-secondary transition-colors">upload_file</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-2">Drag &amp; Drop or Click to Upload</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Supports PNG, JPG, PDF (Max 10MB)</p>
+</div>
+<!-- Processing State (Hidden initially) -->
+<div class="absolute inset-0 hidden bg-surface-container-lowest p-4" id="preview-container">
+<div class="relative w-full h-full border border-outline-variant rounded-lg overflow-hidden bg-surface-container-low flex items-center justify-center">
+<img alt="Cheque Preview" class="w-full h-auto max-h-full object-contain opacity-50 mix-blend-multiply" data-alt="A highly detailed, realistic image of a generic business cheque resting on a pristine white surface. The cheque features modern, minimalist typography, standard banking routing numbers, and a simulated signature. The lighting is bright, studio-quality, creating a crisp, corporate aesthetic suitable for a high-end enterprise banking application. Color palette is dominated by neutral whites, soft blues, and crisp blacks." id="cheque-preview" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCO8BNN5zIcdAW8gfNaE44QZqTB5upZoifPVQzyyRva1diwizDNYYMeKgbULEQhSCwNZlD-6LHvjmFYYWGV5VpwTNphxYrEwkN2c0QzZnm5OMxxJEc9B4YWd9gxaF3gzzeKsQxNWgRuryWFg02AFZlMmX-2l7D9PA2_MCf3N6HwKUtTkGLjLmIFddaj-X_uCTJi4CYeeQd94O3YM43M9JCW-wTdeC4-wwTmxoaEArBossbPbFaWmP5w"/>
+<div class="scanner-beam" id="scanner-beam"></div>
+<!-- Simulated AI Focus Area -->
+<div class="absolute top-1/4 right-1/4 w-1/3 h-12 border-2 border-[#2170e4] bg-[#2170e4]/10 rounded hidden transition-all duration-300" id="focus-area"></div>
+</div>
+</div>
+<input accept="image/*,.pdf" class="hidden" id="file-input" type="file"/>
+</div>
+</div>
+<!-- Status Panel (Right) -->
+<div class="lg:col-span-4 flex flex-col">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 h-full flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-stack-lg border-b border-outline-variant pb-4">AI Processing Status</h3>
+<!-- Empty State -->
+<div class="flex-grow flex flex-col items-center justify-center text-center opacity-70" id="status-empty">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant mb-2">hourglass_empty</span>
+<p class="font-body-md text-body-md text-on-surface-variant">Awaiting file upload...</p>
+</div>
+<!-- Processing Stages (Hidden initially) -->
+<div class="hidden flex-grow flex flex-col space-y-stack-md" id="status-stages">
+<!-- Stage 1 -->
+<div class="flex items-start" id="stage-1">
+<div class="mt-1 mr-4 flex-shrink-0">
+<span class="material-symbols-outlined text-outline status-icon" data-icon="circle">circle</span>
+</div>
+<div>
+<p class="font-body-md text-body-md font-semibold text-on-surface">Detecting Cheque</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Locating document boundaries.</p>
+</div>
+</div>
+<!-- Stage 2 -->
+<div class="flex items-start opacity-50" id="stage-2">
+<div class="mt-1 mr-4 flex-shrink-0">
+<span class="material-symbols-outlined text-outline status-icon" data-icon="circle">circle</span>
+</div>
+<div>
+<p class="font-body-md text-body-md font-semibold text-on-surface">Extracting Information</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Reading MICR, amount, and payee.</p>
+</div>
+</div>
+<!-- Stage 3 -->
+<div class="flex items-start opacity-50" id="stage-3">
+<div class="mt-1 mr-4 flex-shrink-0">
+<span class="material-symbols-outlined text-outline status-icon" data-icon="circle">circle</span>
+</div>
+<div>
+<p class="font-body-md text-body-md font-semibold text-on-surface">Validating Banking Details</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Cross-referencing routing numbers.</p>
+</div>
+</div>
+<!-- Stage 4 -->
+<div class="flex items-start opacity-50" id="stage-4">
+<div class="mt-1 mr-4 flex-shrink-0">
+<span class="material-symbols-outlined text-outline status-icon" data-icon="circle">circle</span>
+</div>
+<div>
+<p class="font-body-md text-body-md font-semibold text-on-surface">Checking for Fraud</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Analyzing signature and alterations.</p>
+</div>
+</div>
+<!-- Stage 5 -->
+<div class="flex items-start opacity-50" id="stage-5">
+<div class="mt-1 mr-4 flex-shrink-0">
+<span class="material-symbols-outlined text-outline status-icon" data-icon="circle">circle</span>
+</div>
+<div>
+<p class="font-body-md text-body-md font-semibold text-on-surface">Generating Decision</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Preparing final assessment.</p>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="mt-auto pt-6 border-t border-outline-variant flex justify-end space-x-4">
+<button class="px-4 py-2 border border-outline-variant text-on-surface rounded-md font-body-md text-body-md hover:bg-surface-container-low transition-colors hidden" id="btn-cancel">Cancel</button>
+<button class="px-4 py-2 bg-primary text-on-primary rounded-md font-body-md text-body-md hover:bg-on-tertiary-fixed-variant transition-colors hidden" id="btn-view">View Results</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('file-input');
+            const uploadPrompt = document.getElementById('upload-prompt');
+            const previewContainer = document.getElementById('preview-container');
+            const scannerBeam = document.getElementById('scanner-beam');
+            const focusArea = document.getElementById('focus-area');
+            
+            const statusEmpty = document.getElementById('status-empty');
+            const statusStages = document.getElementById('status-stages');
+            const btnCancel = document.getElementById('btn-cancel');
+            const btnView = document.getElementById('btn-view');
+            const chequePreview = document.getElementById('cheque-preview');
+
+            // Drag and Drop visual feedback
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => dropZone.classList.add('upload-active'), false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => dropZone.classList.remove('upload-active'), false);
+            });
+
+            dropZone.addEventListener('drop', handleDrop, false);
+            dropZone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', handleFiles);
+
+            function handleDrop(e) {
+                let dt = e.dataTransfer;
+                let files = dt.files;
+                handleFiles({ target: { files: files } });
+            }
+
+            function handleFiles(e) {
+                if(e.target.files.length > 0) {
+                    startSimulation();
+                }
+            }
+
+            function startSimulation() {
+                // UI State change for upload
+                uploadPrompt.classList.add('hidden');
+                previewContainer.classList.remove('hidden');
+                scannerBeam.style.display = 'block';
+                dropZone.classList.remove('cursor-pointer');
+                chequePreview.classList.remove('opacity-50');
+                
+                statusEmpty.classList.add('hidden');
+                statusStages.classList.remove('hidden');
+                btnCancel.classList.remove('hidden');
+
+                // Simulate processing stages
+                simulateStages();
+            }
+
+            function updateStage(stageNum, status) {
+                const stage = document.getElementById(`stage-${stageNum}`);
+                const iconSpan = stage.querySelector('.status-icon');
+                
+                if (status === 'active') {
+                    stage.classList.remove('opacity-50');
+                    iconSpan.textContent = 'pending';
+                    iconSpan.classList.remove('text-outline');
+                    iconSpan.classList.add('text-secondary', 'processing-pulse');
+                    
+                    // Move focus area to simulate AI reading different parts
+                    if(stageNum === 2) {
+                        focusArea.classList.remove('hidden');
+                        focusArea.style.top = '70%';
+                        focusArea.style.left = '10%';
+                        focusArea.style.width = '40%';
+                    } else if (stageNum === 3) {
+                        focusArea.style.top = '85%';
+                        focusArea.style.left = '20%';
+                        focusArea.style.width = '60%';
+                    } else if (stageNum === 4) {
+                        focusArea.style.top = '60%';
+                        focusArea.style.left = '70%';
+                        focusArea.style.width = '20%';
+                    }
+
+                } else if (status === 'complete') {
+                    iconSpan.textContent = 'check_circle';
+                    iconSpan.classList.remove('processing-pulse', 'text-secondary');
+                    iconSpan.classList.add('text-[#059669]'); // Generic green for completion success feeling, using arbitrary purely for inline visual not theme critical here
+                    iconSpan.style.color = '#059669'; // override for strictness
+                    // Note: Ideally use theme colors, but sticking to requested literal interpretation where possible. 
+                    // Using secondary for active, hardcoded green for done if no specific theme token fits 'success' perfectly in provided config.
+                }
+            }
+
+            async function simulateStages() {
+                const stages = 5;
+                const delay = 1500;
+
+                for (let i = 1; i <= stages; i++) {
+                    updateStage(i, 'active');
+                    await new Promise(r => setTimeout(r, delay));
+                    updateStage(i, 'complete');
+                }
+
+                // Finalize
+                scannerBeam.style.display = 'none';
+                focusArea.classList.add('hidden');
+                btnCancel.classList.add('hidden');
+                btnView.classList.remove('hidden');
+            }
+            
+            // Reset simulation if cancel clicked (for demo purposes)
+             btnCancel.addEventListener('click', (e) => {
+                 e.stopPropagation();
+                 location.reload();
+             });
+        });
+    </script>
+</body></html>

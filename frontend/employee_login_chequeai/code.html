@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ChequeAI - Enterprise Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#d3e4fe",
+                        "primary-fixed-dim": "#bec6e0",
+                        "on-tertiary-container": "#75859d",
+                        "surface-container-low": "#f2f4f6",
+                        "on-surface-variant": "#45464d",
+                        "surface": "#f7f9fb",
+                        "on-secondary-container": "#fefcff",
+                        "primary": "#000000",
+                        "secondary-fixed": "#d8e2ff",
+                        "on-tertiary": "#ffffff",
+                        "secondary-container": "#2170e4",
+                        "surface-tint": "#565e74",
+                        "inverse-surface": "#2d3133",
+                        "on-primary-fixed": "#131b2e",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "on-background": "#191c1e",
+                        "tertiary": "#000000",
+                        "surface-container": "#eceef0",
+                        "primary-fixed": "#dae2fd",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "outline-variant": "#c6c6cd",
+                        "surface-variant": "#e0e3e5",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "background": "#f7f9fb",
+                        "surface-dim": "#d8dadc",
+                        "on-secondary": "#ffffff",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-surface": "#191c1e",
+                        "tertiary-container": "#0b1c30",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "on-primary-container": "#7c839b",
+                        "error-container": "#ffdad6",
+                        "primary-container": "#131b2e",
+                        "on-secondary-fixed-variant": "#004395",
+                        "on-error": "#ffffff",
+                        "outline": "#76777d",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#001a42",
+                        "inverse-primary": "#bec6e0",
+                        "surface-container-high": "#e6e8ea",
+                        "secondary": "#0058be"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-sm": "8px",
+                        "cell-padding": "12px 16px",
+                        "container-max": "1440px",
+                        "margin-page": "32px",
+                        "gutter": "24px",
+                        "stack-md": "16px",
+                        "stack-lg": "24px",
+                        "stack-xs": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "data-mono": ["JetBrains Mono"],
+                        "label-caps": ["Inter"],
+                        "display-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "data-mono": ["13px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bg-pattern {
+            background-image: radial-gradient(var(--tw-colors-outline-variant) 1px, transparent 1px);
+            background-size: 24px 24px;
+            background-position: -12px -12px;
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen flex items-center justify-center relative overflow-hidden font-body-md text-on-surface">
+<!-- Background Texture -->
+<div class="absolute inset-0 bg-pattern opacity-30 mix-blend-multiply z-0"></div>
+<div class="absolute inset-0 bg-gradient-to-br from-background via-background to-surface-container-high opacity-80 z-0"></div>
+<!-- Login Container -->
+<div class="relative z-10 w-full max-w-md px-gutter">
+<!-- Logo Header -->
+<div class="text-center mb-stack-lg">
+<div class="inline-flex items-center justify-center w-16 h-16 bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm mb-stack-md">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="account_balance">account_balance</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-primary mb-stack-xs">ChequeAI</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Enterprise Banking Portal</p>
+</div>
+<!-- Login Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)] overflow-hidden">
+<div class="p-margin-page">
+<form action="#" class="space-y-stack-md" method="POST">
+<!-- Employee ID -->
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface uppercase mb-stack-xs" for="employee-id">Employee ID</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant text-lg" data-icon="badge">badge</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2 border border-outline-variant rounded bg-surface-bright font-data-mono text-data-mono text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent transition-all" id="employee-id" name="employee-id" placeholder="ID-000000" required="" type="text"/>
+</div>
+</div>
+<!-- Password -->
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface uppercase mb-stack-xs" for="password">Password</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant text-lg" data-icon="lock">lock</span>
+</div>
+<input class="block w-full pl-10 pr-10 py-2 border border-outline-variant rounded bg-surface-bright font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent transition-all" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="visibility_off">visibility_off</span>
+</div>
+</div>
+</div>
+<!-- MFA Notice -->
+<div class="bg-surface-container-low border border-outline-variant rounded p-3 flex items-start gap-3 mt-stack-md">
+<span class="material-symbols-outlined text-primary text-xl mt-0.5" data-icon="security">security</span>
+<div>
+<p class="font-body-sm text-body-sm text-on-surface">Multi-Factor Authentication required.</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">A secure token will be requested on the next screen.</p>
+</div>
+</div>
+<!-- Submit Action -->
+<div class="pt-stack-sm">
+<button class="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded bg-primary text-on-primary font-body-md text-body-md font-medium hover:bg-on-surface-variant focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors" type="submit">
+                            Authenticate <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</form>
+</div>
+<!-- Footer Links -->
+<div class="bg-surface border-t border-outline-variant px-margin-page py-4 flex justify-between items-center">
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">IT Support</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">System Status</a>
+</div>
+</div>
+<!-- System Status Indicator -->
+<div class="mt-stack-lg flex items-center justify-center gap-2 text-on-surface-variant font-body-sm text-body-sm">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span>System Operational</span>
+</div>
+</div>
+</body></html>

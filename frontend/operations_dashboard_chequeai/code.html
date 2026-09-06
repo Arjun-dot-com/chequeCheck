@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ChequeAI - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed-variant": "#38485d",
+                      "inverse-on-surface": "#eff1f3",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-fixed": "#d3e4fe",
+                      "primary-fixed-dim": "#bec6e0",
+                      "on-tertiary-container": "#75859d",
+                      "surface-container-low": "#f2f4f6",
+                      "on-surface-variant": "#45464d",
+                      "surface": "#f7f9fb",
+                      "on-secondary-container": "#fefcff",
+                      "primary": "#000000",
+                      "secondary-fixed": "#d8e2ff",
+                      "on-tertiary": "#ffffff",
+                      "secondary-container": "#2170e4",
+                      "surface-tint": "#565e74",
+                      "inverse-surface": "#2d3133",
+                      "on-primary-fixed": "#131b2e",
+                      "secondary-fixed-dim": "#adc6ff",
+                      "tertiary-fixed-dim": "#b7c8e1",
+                      "on-background": "#191c1e",
+                      "tertiary": "#000000",
+                      "surface-container": "#eceef0",
+                      "primary-fixed": "#dae2fd",
+                      "error": "#ba1a1a",
+                      "on-tertiary-fixed": "#0b1c30",
+                      "outline-variant": "#c6c6cd",
+                      "surface-variant": "#e0e3e5",
+                      "on-primary": "#ffffff",
+                      "surface-bright": "#f7f9fb",
+                      "background": "#f7f9fb",
+                      "surface-dim": "#d8dadc",
+                      "on-secondary": "#ffffff",
+                      "surface-container-highest": "#e0e3e5",
+                      "on-surface": "#191c1e",
+                      "tertiary-container": "#0b1c30",
+                      "on-primary-fixed-variant": "#3f465c",
+                      "on-primary-container": "#7c839b",
+                      "error-container": "#ffdad6",
+                      "primary-container": "#131b2e",
+                      "on-secondary-fixed-variant": "#004395",
+                      "on-error": "#ffffff",
+                      "outline": "#76777d",
+                      "on-error-container": "#93000a",
+                      "on-secondary-fixed": "#001a42",
+                      "inverse-primary": "#bec6e0",
+                      "surface-container-high": "#e6e8ea",
+                      "secondary": "#0058be"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "stack-sm": "8px",
+                      "cell-padding": "12px 16px",
+                      "container-max": "1440px",
+                      "margin-page": "32px",
+                      "gutter": "24px",
+                      "stack-md": "16px",
+                      "stack-lg": "24px",
+                      "stack-xs": "4px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "headline-sm": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "data-mono": ["JetBrains Mono"],
+                      "label-caps": ["Inter"],
+                      "display-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "body-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "data-mono": ["13px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md text-body-md antialiased overflow-hidden flex h-screen">
+<!-- SideNavBar -->
+<aside class="h-full w-64 fixed left-0 top-0 bg-surface border-r border-outline-variant flex flex-col h-screen py-margin-page z-50">
+<div class="px-6 mb-8">
+<h1 class="font-headline-sm text-headline-sm font-bold text-on-surface">ChequeAI</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Enterprise Banking</p>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-secondary font-bold border-r-4 border-secondary bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">cloud_upload</span>
+                Upload
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">history</span>
+                History
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">assessment</span>
+                Reports
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Settings
+            </a>
+</nav>
+<div class="px-4 mt-auto space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+                Help
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">logout</span>
+                Logout
+            </a>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col ml-64 min-h-screen">
+<!-- TopAppBar -->
+<header class="bg-surface border-b border-outline-variant docked full-width top-0 sticky z-40 flex justify-between items-center h-16 px-margin-page transition-all duration-300">
+<nav class="flex gap-6 h-full items-center">
+<a class="text-on-surface-variant hover:text-secondary h-full flex items-center font-body-md text-body-md transition-colors" href="#">Queue</a>
+<a class="text-on-surface-variant hover:text-secondary h-full flex items-center font-body-md text-body-md transition-colors" href="#">Fraud Monitor</a>
+<a class="text-on-surface-variant hover:text-secondary h-full flex items-center font-body-md text-body-md transition-colors" href="#">Audit Log</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-secondary transition-colors p-2 rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-secondary transition-colors p-2 rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Workspace -->
+<main class="flex-1 overflow-y-auto p-margin-page">
+<div class="max-w-container-max mx-auto space-y-stack-lg">
+<!-- Header & Actions -->
+<div class="flex justify-between items-center">
+<div>
+<h2 class="font-display-lg text-display-lg text-on-surface">Operations Overview</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-2">Real-time processing metrics and recent activity.</p>
+</div>
+<button class="bg-primary text-on-primary px-6 py-3 rounded-lg font-body-md text-body-md font-semibold hover:bg-surface-tint transition-colors flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined">add</span>
+                        Process New Cheque
+                    </button>
+</div>
+<!-- Bento Grid for Stats -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Stat Card: Total -->
+<div class="bg-surface-container-lowest border border-surface-variant p-6 rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start mb-4">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Total Processed</span>
+<span class="material-symbols-outlined text-outline">receipt_long</span>
+</div>
+<div>
+<div class="font-display-lg text-display-lg text-on-surface">12,450</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-1">Today's volume</div>
+</div>
+</div>
+<!-- Stat Card: Approved -->
+<div class="bg-surface-container-lowest border border-surface-variant p-6 rounded-xl flex flex-col justify-between relative overflow-hidden group hover:border-outline transition-colors">
+<div class="absolute top-0 right-0 w-16 h-16 bg-surface-variant/20 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+<div class="flex justify-between items-start mb-4">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Approved</span>
+<span class="material-symbols-outlined text-secondary">check_circle</span>
+</div>
+<div>
+<div class="font-display-lg text-display-lg text-on-surface">11,203</div>
+<div class="font-body-sm text-body-sm text-secondary font-medium mt-1">90.0% auto-cleared</div>
+</div>
+</div>
+<!-- Stat Card: Manual Review -->
+<div class="bg-surface-container-lowest border border-surface-variant p-6 rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start mb-4">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Manual Review</span>
+<span class="material-symbols-outlined text-surface-tint">visibility</span>
+</div>
+<div>
+<div class="font-display-lg text-display-lg text-on-surface">1,142</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-1">Pending verification</div>
+</div>
+</div>
+<!-- Stat Card: Fraud Alerts -->
+<div class="bg-error-container border border-error-container p-6 rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start mb-4">
+<span class="font-label-caps text-label-caps text-on-error-container uppercase">Fraud Alerts</span>
+<span class="material-symbols-outlined text-error">warning</span>
+</div>
+<div>
+<div class="font-display-lg text-display-lg text-on-error-container">105</div>
+<div class="font-body-sm text-body-sm text-on-error-container mt-1">Requires immediate action</div>
+</div>
+</div>
+</div>
+<!-- Main Content Area: Chart and Table -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter mt-stack-lg">
+<!-- Chart Area -->
+<div class="lg:col-span-1 bg-surface-container-lowest border border-surface-variant rounded-xl p-6 flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-6">Processing Volume</h3>
+<div class="flex-1 bg-surface-container-low rounded-lg flex items-end p-4 gap-2 relative min-h-[250px]">
+<!-- Pseudo Chart Bars -->
+<div class="w-full bg-primary/10 rounded-t-sm h-[40%] hover:bg-primary/20 transition-colors"></div>
+<div class="w-full bg-primary/20 rounded-t-sm h-[60%] hover:bg-primary/30 transition-colors"></div>
+<div class="w-full bg-primary/30 rounded-t-sm h-[45%] hover:bg-primary/40 transition-colors"></div>
+<div class="w-full bg-primary/40 rounded-t-sm h-[80%] hover:bg-primary/50 transition-colors"></div>
+<div class="w-full bg-secondary/80 rounded-t-sm h-[95%] hover:bg-secondary transition-colors relative">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface font-body-sm text-body-sm px-2 py-1 rounded opacity-0 hover:opacity-100 transition-opacity">Today</div>
+</div>
+</div>
+</div>
+<!-- Recent Activity Table -->
+<div class="lg:col-span-2 bg-surface-container-lowest border border-surface-variant rounded-xl overflow-hidden flex flex-col">
+<div class="p-6 border-b border-surface-variant flex justify-between items-center bg-surface-container-lowest">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Recent Activity</h3>
+<button class="text-secondary font-body-sm text-body-sm hover:underline">View All</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-lowest border-b border-surface-variant">
+<tr>
+<th class="p-cell-padding font-label-caps text-label-caps text-on-surface-variant uppercase whitespace-nowrap">Cheque #</th>
+<th class="p-cell-padding font-label-caps text-label-caps text-on-surface-variant uppercase whitespace-nowrap">Account</th>
+<th class="p-cell-padding font-label-caps text-label-caps text-on-surface-variant uppercase text-right whitespace-nowrap">Amount</th>
+<th class="p-cell-padding font-label-caps text-label-caps text-on-surface-variant uppercase whitespace-nowrap">Status</th>
+<th class="p-cell-padding w-10"></th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm divide-y divide-surface-variant">
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-cell-padding font-data-mono text-data-mono text-on-surface">CHQ-89234</td>
+<td class="p-cell-padding font-data-mono text-data-mono text-on-surface-variant">***4592</td>
+<td class="p-cell-padding font-data-mono text-data-mono text-on-surface text-right">$12,500.00</td>
+<td class="p-cell-padding">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-caps text-label-caps">Approved</span>
+</td>
+<td class="p-cell-padding text-right">
+<button class="text-outline hover:text-on-surface opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-[20px]">more_vert</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-cell-padding font-data-mono text-data-mono text-on-surface">CHQ-89235</td>
+<td class="p-cell-padding font-data-mono text-data-mono text-on-surface-variant">***1120</td>
+<td class="p-cell-padding font-data-mono text-data-mono text-on-surface text-right">$3,240.50</td>
+<td class="p-cell-padding">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-surface-variant text-on-surface-variant font-label-caps text-label-caps">Review</span>
+</td>
+<td class="p-cell-padding text-right">
+<button class="text-outline hover:text-on-surface opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-[20px]">more_vert</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-cell-padding font-data-mono text-data-mono text-on-surface">CHQ-89236</td>
+<td class="p-cell-padding font-data-mono text-data-mono text-on-surface-variant">***8841</td>
+<td class="p-cell-padding font-data-mono text-data-mono text-on-surface text-right">$45,000.00</td>
+<td class="p-cell-padding">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-error-container text-on-error-container font-label-caps text-label-caps flex gap-1"><span class="material-symbols-outlined text-[14px]">warning</span> Flagged</span>
+</td>
+<td class="p-cell-padding text-right">
+<button class="text-outline hover:text-on-surface opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-[20px]">more_vert</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-cell-padding font-data-mono text-data-mono text-on-surface">CHQ-89237</td>
+<td class="p-cell-padding font-data-mono text-data-mono text-on-surface-variant">***2290</td>
+<td class="p-cell-padding font-data-mono text-data-mono text-on-surface text-right">$150.00</td>
+<td class="p-cell-padding">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-caps text-label-caps">Approved</span>
+</td>
+<td class="p-cell-padding text-right">
+<button class="text-outline hover:text-on-surface opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-[20px]">more_vert</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-cell-padding font-data-mono text-data-mono text-on-surface">CHQ-89238</td>
+<td class="p-cell-padding font-data-mono text-data-mono text-on-surface-variant">***7712</td>
+<td class="p-cell-padding font-data-mono text-data-mono text-on-surface text-right">$8,900.25</td>
+<td class="p-cell-padding">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-caps text-label-caps">Approved</span>
+</td>
+<td class="p-cell-padding text-right">
+<button class="text-outline hover:text-on-surface opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-[20px]">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
