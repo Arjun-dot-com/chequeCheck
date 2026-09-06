@@ -156,19 +156,19 @@
 <div class="flex-1 px-stack-sm overflow-y-auto">
 <ul class="space-y-1">
 <li>
-<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors duration-200 ease-in-out" href="#">
+<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors duration-200 ease-in-out" href="../operations_dashboard_chequeai/code.html">
 <span class="material-symbols-outlined">dashboard</span>
 <span class="font-body-md text-body-md">Dashboard</span>
 </a>
 </li>
 <li>
-<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors duration-200 ease-in-out" href="#">
+<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors duration-200 ease-in-out" href="../process_new_cheque_chequeai/code.html">
 <span class="material-symbols-outlined">cloud_upload</span>
 <span class="font-body-md text-body-md">Upload</span>
 </a>
 </li>
 <li>
-<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors duration-200 ease-in-out" href="#">
+<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors duration-200 ease-in-out" href="../transaction_history_audit_chequeai/code.html">
 <span class="material-symbols-outlined">history</span>
 <span class="font-body-md text-body-md">History</span>
 </a>
@@ -196,7 +196,7 @@
 </a>
 </li>
 <li>
-<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors duration-200 ease-in-out" href="#">
+<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors duration-200 ease-in-out" href="../employee_login_chequeai/code.html">
 <span class="material-symbols-outlined">logout</span>
 <span class="font-body-md text-body-md">Logout</span>
 </a>
@@ -227,11 +227,11 @@
 <div class="mb-stack-lg flex justify-between items-end">
 <div>
 <h2 class="font-display-lg text-display-lg text-on-surface mb-stack-xs">OCR Verification</h2>
-<p class="font-body-md text-body-md text-on-surface-variant">Review extracted data for Cheque #49281 before approval.</p>
+<p id="header-subtitle" class="font-body-md text-body-md text-on-surface-variant">Review extracted data before approval.</p>
 </div>
 <div class="flex gap-stack-sm items-center bg-surface-container-low px-stack-md py-stack-sm rounded-full border border-outline-variant">
 <span class="w-2 h-2 rounded-full bg-secondary-container animate-pulse"></span>
-<span class="font-body-sm text-body-sm text-on-surface-variant">AI Confidence: High (98%)</span>
+<span id="header-confidence" class="font-body-sm text-body-sm text-on-surface-variant">AI Confidence: Calculating...</span>
 </div>
 </div>
 <!-- Fixed-Fluid Hybrid Grid -->
@@ -241,10 +241,10 @@
 <div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-stack-sm relative overflow-hidden shadow-sm">
 <!-- Cheque Image Container -->
 <div class="relative w-full aspect-[2.1/1] bg-surface-container rounded-DEFAULT overflow-hidden group">
-<!-- Cheque Image Placeholder -->
-<img class="w-full h-full object-cover grayscale opacity-90 mix-blend-multiply" data-alt="A high-resolution, crisp corporate bank cheque laid flat on a neutral minimalist surface. Bright, even studio lighting with no harsh shadows. The cheque features standard banking layout with a clear white background, subtle blue security patterns, and clear black typography. Professional, secure, and modern corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbcyFpWosTnkldgY6PdmqEUGZ6z7sDMSSBuwf6aJ6KnjxdJ0TMCQTmJOWAMk2nbqLYvwjQXflaUd3A9SOulj70UqbGldU4dgWI4GK9IgmtAktCPfDC_maEtKFC0ve8AitxbW3hKIhdLfFiNqPYZbc6EwhG42wGCz0SD-wwCcAKJUsk6un5vt0DBGX4uU7cChsGyx_cYVSR8IRQnKJccQ7RMm9KU1SFPTFGI--XpaBhJLK2JjWeGQ9_"/>
-<!-- OCR Scanning Animation (Simulated) -->
-<div class="scan-animation"></div>
+<!-- Cheque image omitted as it was not passed from Upload page -->
+<div class="absolute inset-0 flex items-center justify-center text-on-surface-variant font-body-md bg-surface-container-low border border-dashed border-outline-variant">
+<span>No cheque image stored by Upload page.</span>
+</div>
 <!-- Interactive Bounding Boxes (OCR Highlights) -->
 <!-- Date -->
 <div class="ocr-highlight" onclick="highlightField('date')" style="top: 15%; left: 75%; width: 15%; height: 10%;" title="Date"></div>
@@ -264,8 +264,8 @@
 <div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-stack-md flex gap-stack-md items-start">
 <span class="material-symbols-outlined text-secondary-container text-2xl mt-1">document_scanner</span>
 <div>
-<h4 class="font-headline-sm text-headline-sm text-on-surface mb-stack-xs">AI Analysis Complete</h4>
-<p class="font-body-md text-body-md text-on-surface-variant">All key fields detected successfully. Signature match requires manual confirmation due to slight variance from baseline.</p>
+<h4 class="font-headline-sm text-headline-sm text-on-surface mb-stack-xs">OCR Analysis Complete</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Data extracted successfully. Please review the highlighted fields and validation flags below.</p>
 </div>
 </div>
 </div>
@@ -277,77 +277,57 @@
 </div>
 <div class="p-stack-md space-y-stack-md flex-1 overflow-y-auto">
 <!-- Form Field: Cheque # -->
-<div class="flex flex-col gap-stack-xs">
+<div class="flex flex-col gap-stack-xs" id="field-cheque-number">
 <div class="flex justify-between items-center">
 <label class="font-label-caps text-label-caps text-on-surface-variant">CHEQUE NUMBER</label>
-<span class="font-label-caps text-label-caps text-secondary font-bold bg-secondary-fixed px-2 py-0.5 rounded">99%</span>
+<span id="conf-cheque-number" class="font-label-caps text-label-caps text-secondary font-bold bg-secondary-fixed px-2 py-0.5 rounded">-</span>
 </div>
 <div class="relative">
-<input class="w-full bg-surface border border-outline-variant rounded px-3 py-2 font-data-mono text-data-mono text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary-container focus:border-transparent transition-all" type="text" value="0049281"/>
+<input id="input-cheque-number" class="w-full bg-surface border border-outline-variant rounded px-3 py-2 font-data-mono text-data-mono text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary-container focus:border-transparent transition-all" type="text" value=""/>
 </div>
 </div>
 <!-- Form Field: Date -->
 <div class="flex flex-col gap-stack-xs" id="field-date">
 <div class="flex justify-between items-center">
 <label class="font-label-caps text-label-caps text-on-surface-variant">DATE</label>
-<span class="font-label-caps text-label-caps text-secondary font-bold bg-secondary-fixed px-2 py-0.5 rounded">95%</span>
+<span id="conf-date" class="font-label-caps text-label-caps text-secondary font-bold bg-secondary-fixed px-2 py-0.5 rounded">-</span>
 </div>
 <div class="relative">
-<input class="w-full bg-surface border border-outline-variant rounded px-3 py-2 font-data-mono text-data-mono text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary-container focus:border-transparent transition-all" type="text" value="2023-10-24"/>
+<input id="input-date" class="w-full bg-surface border border-outline-variant rounded px-3 py-2 font-data-mono text-data-mono text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary-container focus:border-transparent transition-all" type="text" value=""/>
 </div>
 </div>
 <!-- Form Field: Payee -->
 <div class="flex flex-col gap-stack-xs" id="field-payee">
 <div class="flex justify-between items-center">
 <label class="font-label-caps text-label-caps text-on-surface-variant">PAYEE</label>
-<span class="font-label-caps text-label-caps text-secondary font-bold bg-secondary-fixed px-2 py-0.5 rounded">98%</span>
+<span id="conf-payee" class="font-label-caps text-label-caps text-secondary font-bold bg-secondary-fixed px-2 py-0.5 rounded">-</span>
 </div>
 <div class="relative">
-<input class="w-full bg-surface border border-outline-variant rounded px-3 py-2 font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary-container focus:border-transparent transition-all" type="text" value="Acme Corporation Ltd."/>
+<input id="input-payee" class="w-full bg-surface border border-outline-variant rounded px-3 py-2 font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary-container focus:border-transparent transition-all" type="text" value=""/>
 </div>
 </div>
 <!-- Form Field: Amount (Focused State Example) -->
 <div class="flex flex-col gap-stack-xs" id="field-amount">
 <div class="flex justify-between items-center">
 <label class="font-label-caps text-label-caps text-primary">AMOUNT</label>
-<span class="font-label-caps text-label-caps text-secondary font-bold bg-secondary-fixed px-2 py-0.5 rounded">100%</span>
+<span id="conf-amount" class="font-label-caps text-label-caps text-secondary font-bold bg-secondary-fixed px-2 py-0.5 rounded">-</span>
 </div>
 <div class="relative">
 <span class="absolute left-3 top-2.5 font-data-mono text-on-surface-variant">$</span>
-<input class="w-full bg-surface-container-lowest border-2 border-secondary-container rounded pl-8 pr-3 py-2 font-data-mono text-data-mono text-on-surface focus:outline-none shadow-[0_0_0_2px_rgba(33,112,228,0.2)] transition-all" type="text" value="12,500.00"/>
+<input id="input-amount" class="w-full bg-surface-container-lowest border-2 border-secondary-container rounded pl-8 pr-3 py-2 font-data-mono text-data-mono text-on-surface focus:outline-none shadow-[0_0_0_2px_rgba(33,112,228,0.2)] transition-all" type="text" value=""/>
 </div>
 </div>
 <hr class="border-surface-variant my-stack-md"/>
 <!-- Validation Checks -->
-<div class="space-y-stack-sm">
+<div class="space-y-stack-sm" id="validation-container">
 <h4 class="font-label-caps text-label-caps text-on-surface-variant mb-stack-sm">SYSTEM VALIDATION</h4>
-<div class="flex items-center justify-between p-2 rounded bg-surface border border-surface-variant">
-<div class="flex items-center gap-stack-sm">
-<span class="material-symbols-outlined text-[#10b981] text-lg">check_circle</span>
-<span class="font-body-sm text-body-sm text-on-surface">Account Active</span>
-</div>
-<span class="font-data-mono text-data-mono text-on-surface-variant text-[11px]">CHK-OK</span>
-</div>
-<div class="flex items-center justify-between p-2 rounded bg-surface border border-surface-variant">
-<div class="flex items-center gap-stack-sm">
-<span class="material-symbols-outlined text-[#10b981] text-lg">check_circle</span>
-<span class="font-body-sm text-body-sm text-on-surface">No Duplicates Found</span>
-</div>
-</div>
-<div class="flex items-center justify-between p-2 rounded bg-surface border border-surface-variant">
-<div class="flex items-center gap-stack-sm">
-<span class="material-symbols-outlined text-[#eab308] text-lg">warning</span>
-<span class="font-body-sm text-body-sm text-on-surface">Signature Variance</span>
-</div>
-<button class="font-label-caps text-label-caps text-secondary hover:underline">REVIEW</button>
-</div>
 </div>
 </div>
 <!-- Bottom Action Bar -->
 <div class="p-stack-md border-t border-surface-variant bg-surface-bright rounded-b-lg flex gap-stack-sm">
-<button class="flex-1 bg-primary text-on-primary font-label-caps text-label-caps py-3 px-4 rounded transition-colors hover:bg-inverse-surface">APPROVE</button>
-<button class="flex-1 bg-surface-container-lowest border border-outline-variant text-primary font-label-caps text-label-caps py-3 px-4 rounded transition-colors hover:bg-surface-container-low">FLAG REVIEW</button>
-<button class="bg-error text-on-error font-label-caps text-label-caps py-3 px-4 rounded transition-colors hover:bg-[#9f1212] flex items-center justify-center">
+<button class="flex-1 bg-primary text-on-primary font-label-caps text-label-caps py-3 px-4 rounded transition-colors opacity-50 cursor-not-allowed" disabled>APPROVE (PENDING)</button>
+<button class="flex-1 bg-surface-container-lowest border border-outline-variant text-primary font-label-caps text-label-caps py-3 px-4 rounded transition-colors opacity-50 cursor-not-allowed" disabled>FLAG (PENDING)</button>
+<button class="bg-error text-on-error font-label-caps text-label-caps py-3 px-4 rounded transition-colors opacity-50 cursor-not-allowed flex items-center justify-center" disabled>
 <span class="material-symbols-outlined text-lg">close</span>
 </button>
 </div>
@@ -374,5 +354,129 @@
                 }
             }
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const stored = sessionStorage.getItem('chequeai_last_result');
+            if (!stored) {
+                window.location.href = '../process_new_cheque_chequeai/code.html';
+                return;
+            }
+
+            try {
+                const storedResult = JSON.parse(stored);
+                
+                // Add complete debug logging as requested
+                console.log("ChequeAI COMPLETE STORED RESULT:", JSON.stringify(storedResult, null, 2));
+                
+                const ocrResult = storedResult.ocrResult || storedResult.apiResponse;
+                
+                console.log("ChequeAI COMPLETE OCR RESULT:", JSON.stringify(ocrResult, null, 2));
+                
+                if (!ocrResult || !ocrResult.extracted_data) {
+                    throw new Error("Invalid API response format");
+                }
+
+                const extracted = ocrResult.extracted_data;
+                const validation = ocrResult.validation || {};
+                
+                // Helper to populate fields
+                const populateField = (inputId, confId, dataObj) => {
+                    const inputEl = document.getElementById(inputId);
+                    const confEl = document.getElementById(confId);
+                    
+                    if (dataObj) {
+                        const val = dataObj.value;
+                        const conf = dataObj.confidence !== undefined && dataObj.confidence !== null ? parseFloat(dataObj.confidence) : 0;
+                        
+                        inputEl.value = val && val.trim() !== '' ? val : 'Not detected';
+                        confEl.innerText = conf > 0 ? conf.toFixed(1) + '%' : '0.0%';
+                        
+                        // Give 'Not detected' a distinct visual cue
+                        if (!val || val.trim() === '') {
+                            inputEl.classList.add('text-on-surface-variant', 'italic', 'opacity-70');
+                        }
+                    } else {
+                        inputEl.value = 'Not detected';
+                        confEl.innerText = '0.0%';
+                        inputEl.classList.add('text-on-surface-variant', 'italic', 'opacity-70');
+                    }
+                };
+
+                // Update Inputs & Confidences
+                populateField('input-cheque-number', 'conf-cheque-number', extracted.cheque_number);
+                populateField('input-date', 'conf-date', extracted.date);
+                populateField('input-payee', 'conf-payee', extracted.payee);
+                populateField('input-amount', 'conf-amount', extracted.amount);
+                
+                // Header Subtitle
+                const hasChqNum = extracted.cheque_number && extracted.cheque_number.value && extracted.cheque_number.value.trim() !== '';
+                const chqNum = hasChqNum ? extracted.cheque_number.value : 'Unknown';
+                document.getElementById('header-subtitle').innerText = `Review extracted data for Cheque #${chqNum} before approval.`;
+                
+                // Calculate average confidence
+                let totalConf = 0;
+                let confCount = 0;
+                
+                ['cheque_number', 'date', 'payee', 'amount'].forEach(key => {
+                    const field = extracted[key];
+                    // Only count valid confidence numbers towards the average
+                    if (field && field.confidence !== undefined && field.confidence !== null) {
+                        const confNum = parseFloat(field.confidence);
+                        if (!isNaN(confNum) && confNum > 0) {
+                            totalConf += confNum;
+                            confCount++;
+                        }
+                    }
+                });
+                
+                if (confCount > 0) {
+                    const avgConf = Math.round(totalConf / confCount);
+                    let textLevel = 'Low';
+                    if (avgConf >= 90) textLevel = 'High';
+                    else if (avgConf >= 75) textLevel = 'Medium';
+                    
+                    document.getElementById('header-confidence').innerText = `AI Confidence: ${textLevel} (${avgConf}%)`;
+                } else {
+                    document.getElementById('header-confidence').innerText = `AI Confidence: N/A`;
+                }
+                
+                // Validations
+                const valContainer = document.getElementById('validation-container');
+                valContainer.innerHTML = '<h4 class="font-label-caps text-label-caps text-on-surface-variant mb-stack-sm">SYSTEM VALIDATION</h4>';
+                
+                function addValRow(label, isGood, stateText) {
+                    const icon = isGood ? 'check_circle' : 'warning';
+                    const iconColor = isGood ? 'text-[#10b981]' : 'text-[#eab308]';
+                    
+                    valContainer.innerHTML += `
+                        <div class="flex items-center justify-between p-2 rounded bg-surface border border-surface-variant">
+                            <div class="flex items-center gap-stack-sm">
+                                <span class="material-symbols-outlined ${iconColor} text-lg">${icon}</span>
+                                <span class="font-body-sm text-body-sm text-on-surface">${label}</span>
+                            </div>
+                            <span class="font-data-mono text-data-mono ${iconColor} text-[11px]">${stateText}</span>
+                        </div>
+                    `;
+                }
+
+                // Map Arjun's true/false to UI
+                if (validation.is_signed !== undefined) {
+                    addValRow('Signature Detection', validation.is_signed === true, validation.is_signed === true ? 'DETECTED' : 'NOT DETECTED');
+                }
+                if (validation.amount_tamper_flag !== undefined) {
+                    addValRow('Amount Tamper Check', validation.amount_tamper_flag === false, validation.amount_tamper_flag === false ? 'NO TAMPERING' : 'TAMPERING DETECTED');
+                }
+                if (validation.payee_tamper_flag !== undefined) {
+                    addValRow('Payee Tamper Check', validation.payee_tamper_flag === false, validation.payee_tamper_flag === false ? 'NO TAMPERING' : 'TAMPERING DETECTED');
+                }
+
+            } catch (err) {
+                console.error("Error reading stored cheque results:", err);
+                document.getElementById('header-subtitle').innerText = "No scan result found.";
+                document.getElementById('header-confidence').innerText = "Error loading result";
+                // Optionally provide a link back
+                document.getElementById('header-subtitle').innerHTML += ' <a href="../process_new_cheque_chequeai/code.html" class="text-secondary underline">Go back to Upload</a>';
+            }
+        });
     </script>
 </body></html>

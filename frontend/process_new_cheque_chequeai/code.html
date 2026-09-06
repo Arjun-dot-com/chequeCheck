@@ -211,19 +211,19 @@
 </div>
 <ul class="flex-grow space-y-2">
 <li>
-<a class="flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
+<a class="flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="../operations_dashboard_chequeai/code.html">
 <span class="material-symbols-outlined mr-3">dashboard</span>
 <span class="font-body-md text-body-md">Dashboard</span>
 </a>
 </li>
 <li>
-<a class="flex items-center px-6 py-3 text-secondary font-bold border-r-4 border-secondary bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
+<a class="flex items-center px-6 py-3 text-secondary font-bold border-r-4 border-secondary bg-surface-container-low transition-colors duration-200 ease-in-out" href="../process_new_cheque_chequeai/code.html">
 <span class="material-symbols-outlined mr-3">cloud_upload</span>
 <span class="font-body-md text-body-md">Upload</span>
 </a>
 </li>
 <li>
-<a class="flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
+<a class="flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="../transaction_history_audit_chequeai/code.html">
 <span class="material-symbols-outlined mr-3">history</span>
 <span class="font-body-md text-body-md">History</span>
 </a>
@@ -246,7 +246,7 @@
 <span class="material-symbols-outlined mr-3">help_outline</span>
 <span class="font-body-md text-body-md">Help</span>
 </a>
-<a class="flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
+<a class="flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="../employee_login_chequeai/code.html">
 <span class="material-symbols-outlined mr-3">logout</span>
 <span class="font-body-md text-body-md">Logout</span>
 </a>
@@ -416,11 +416,21 @@
 
             function handleFiles(e) {
                 if(e.target.files.length > 0) {
-                    startSimulation();
+                    const file = e.target.files[0];
+                    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
+                    if (!validTypes.includes(file.type)) {
+                        alert('Invalid file type. Please upload a PNG, JPG, or PDF file.');
+                        return;
+                    }
+                    if (file.size > 10 * 1024 * 1024) {
+                        alert('File size exceeds 10 MB limit.');
+                        return;
+                    }
+                    processFile(file);
                 }
             }
 
-            function startSimulation() {
+            async function processFile(file) {
                 // UI State change for upload
                 uploadPrompt.classList.add('hidden');
                 previewContainer.classList.remove('hidden');
@@ -432,8 +442,67 @@
                 statusStages.classList.remove('hidden');
                 btnCancel.classList.remove('hidden');
 
-                // Simulate processing stages
-                simulateStages();
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        chequePreview.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+
+                // Show processing indicator
+                for (let i = 1; i <= 5; i++) {
+                    updateStage(i, 'active');
+                }
+
+                try {
+                    const formData = new FormData();
+                    formData.append("file", file);
+                    
+                    const response = await fetch('http://127.0.0.1:8000/scan', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`API error: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+
+                    // Store response
+                    const resultToStore = {
+                        apiResponse: result,
+                        filename: file.name,
+                        timestamp: new Date().toISOString()
+                    };
+                    sessionStorage.setItem('chequeai_last_result', JSON.stringify(resultToStore));
+
+                    // Complete UI stages
+                    for (let i = 1; i <= 5; i++) {
+                        updateStage(i, 'complete');
+                    }
+
+                    // Finalize UI
+                    scannerBeam.style.display = 'none';
+                    focusArea.classList.add('hidden');
+                    btnCancel.classList.add('hidden');
+                    btnView.classList.remove('hidden');
+
+                } catch (error) {
+                    console.error('Error during API request:', error);
+                    alert('Error processing file. Please try again.');
+                    scannerBeam.style.display = 'none';
+                    focusArea.classList.add('hidden');
+                    
+                    for (let i = 1; i <= 5; i++) {
+                        const stage = document.getElementById(`stage-${i}`);
+                        const iconSpan = stage.querySelector('.status-icon');
+                        iconSpan.textContent = 'error';
+                        iconSpan.classList.remove('processing-pulse', 'text-secondary');
+                        iconSpan.style.color = '#ba1a1a';
+                    }
+                }
             }
 
             function updateStage(stageNum, status) {
@@ -465,35 +534,20 @@
                 } else if (status === 'complete') {
                     iconSpan.textContent = 'check_circle';
                     iconSpan.classList.remove('processing-pulse', 'text-secondary');
-                    iconSpan.classList.add('text-[#059669]'); // Generic green for completion success feeling, using arbitrary purely for inline visual not theme critical here
-                    iconSpan.style.color = '#059669'; // override for strictness
-                    // Note: Ideally use theme colors, but sticking to requested literal interpretation where possible. 
-                    // Using secondary for active, hardcoded green for done if no specific theme token fits 'success' perfectly in provided config.
+                    iconSpan.classList.add('text-[#059669]'); // Generic green for completion success feeling
+                    iconSpan.style.color = '#059669';
                 }
             }
 
-            async function simulateStages() {
-                const stages = 5;
-                const delay = 1500;
+            // Reset simulation if cancel clicked
+            btnCancel.addEventListener('click', (e) => {
+                e.stopPropagation();
+                location.reload();
+            });
 
-                for (let i = 1; i <= stages; i++) {
-                    updateStage(i, 'active');
-                    await new Promise(r => setTimeout(r, delay));
-                    updateStage(i, 'complete');
-                }
-
-                // Finalize
-                scannerBeam.style.display = 'none';
-                focusArea.classList.add('hidden');
-                btnCancel.classList.add('hidden');
-                btnView.classList.remove('hidden');
-            }
-            
-            // Reset simulation if cancel clicked (for demo purposes)
-             btnCancel.addEventListener('click', (e) => {
-                 e.stopPropagation();
-                 location.reload();
-             });
+            btnView.addEventListener('click', () => {
+                window.location.href = '../verification_results_chequeai/code.html';
+            });
         });
     </script>
 </body></html>
