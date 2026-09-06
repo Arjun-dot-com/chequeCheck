@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ChequeAI - History &amp; Audit Trail</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed-variant": "#38485d",
+                      "inverse-on-surface": "#eff1f3",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-fixed": "#d3e4fe",
+                      "primary-fixed-dim": "#bec6e0",
+                      "on-tertiary-container": "#75859d",
+                      "surface-container-low": "#f2f4f6",
+                      "on-surface-variant": "#45464d",
+                      "surface": "#f7f9fb",
+                      "on-secondary-container": "#fefcff",
+                      "primary": "#000000",
+                      "secondary-fixed": "#d8e2ff",
+                      "on-tertiary": "#ffffff",
+                      "secondary-container": "#2170e4",
+                      "surface-tint": "#565e74",
+                      "inverse-surface": "#2d3133",
+                      "on-primary-fixed": "#131b2e",
+                      "secondary-fixed-dim": "#adc6ff",
+                      "tertiary-fixed-dim": "#b7c8e1",
+                      "on-background": "#191c1e",
+                      "tertiary": "#000000",
+                      "surface-container": "#eceef0",
+                      "primary-fixed": "#dae2fd",
+                      "error": "#ba1a1a",
+                      "on-tertiary-fixed": "#0b1c30",
+                      "outline-variant": "#c6c6cd",
+                      "surface-variant": "#e0e3e5",
+                      "on-primary": "#ffffff",
+                      "surface-bright": "#f7f9fb",
+                      "background": "#f7f9fb",
+                      "surface-dim": "#d8dadc",
+                      "on-secondary": "#ffffff",
+                      "surface-container-highest": "#e0e3e5",
+                      "on-surface": "#191c1e",
+                      "tertiary-container": "#0b1c30",
+                      "on-primary-fixed-variant": "#3f465c",
+                      "on-primary-container": "#7c839b",
+                      "error-container": "#ffdad6",
+                      "primary-container": "#131b2e",
+                      "on-secondary-fixed-variant": "#004395",
+                      "on-error": "#ffffff",
+                      "outline": "#76777d",
+                      "on-error-container": "#93000a",
+                      "on-secondary-fixed": "#001a42",
+                      "inverse-primary": "#bec6e0",
+                      "surface-container-high": "#e6e8ea",
+                      "secondary": "#0058be"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "stack-sm": "8px",
+                      "cell-padding": "12px 16px",
+                      "container-max": "1440px",
+                      "margin-page": "32px",
+                      "gutter": "24px",
+                      "stack-md": "16px",
+                      "stack-lg": "24px",
+                      "stack-xs": "4px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "data-mono": [
+                              "JetBrains Mono"
+                      ],
+                      "label-caps": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "data-mono": [
+                              "13px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-caps": [
+                              "11px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md bg-[#F8FAFC]">
+<!-- SideNavBar -->
+<aside class="bg-surface dark:bg-surface-dim text-primary dark:text-primary-fixed-dim font-body-md text-body-md h-full w-64 fixed left-0 top-0 border-r border-outline-variant dark:border-outline flat no shadows flex flex-col h-screen py-margin-page transition-colors duration-200 ease-in-out z-50">
+<div class="px-gutter mb-stack-lg">
+<h1 aria-label="ChequeAI Logo" class="font-headline-sm text-headline-sm font-bold text-on-surface dark:text-inverse-on-surface">ChequeAI</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Enterprise Banking</p>
+</div>
+<nav class="flex-1 px-stack-sm flex flex-col gap-stack-xs">
+<a class="flex items-center gap-stack-sm px-4 py-3 rounded-DEFAULT text-on-surface-variant dark:text-on-tertiary-container hover:text-primary dark:hover:text-primary-fixed hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200 ease-in-out" href="../operations_dashboard_chequeai/code.html">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-stack-sm px-4 py-3 rounded-DEFAULT text-on-surface-variant dark:text-on-tertiary-container hover:text-primary dark:hover:text-primary-fixed hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200 ease-in-out" href="../process_new_cheque_chequeai/code.html">
+<span class="material-symbols-outlined">cloud_upload</span>
+<span>Upload</span>
+</a>
+<a class="flex items-center gap-stack-sm px-4 py-3 rounded-DEFAULT text-secondary dark:text-secondary-fixed-dim font-bold border-r-4 border-secondary bg-surface-container-low" href="../transaction_history_audit_chequeai/code.html">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">history</span>
+<span>History</span>
+</a>
+<a class="flex items-center gap-stack-sm px-4 py-3 rounded-DEFAULT text-on-surface-variant dark:text-on-tertiary-container hover:text-primary dark:hover:text-primary-fixed hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span>Reports</span>
+</a>
+<a class="flex items-center gap-stack-sm px-4 py-3 rounded-DEFAULT text-on-surface-variant dark:text-on-tertiary-container hover:text-primary dark:hover:text-primary-fixed hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="px-stack-sm mt-auto flex flex-col gap-stack-xs pt-stack-md border-t border-outline-variant">
+<a class="flex items-center gap-stack-sm px-4 py-3 rounded-DEFAULT text-on-surface-variant dark:text-on-tertiary-container hover:text-primary dark:hover:text-primary-fixed hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+<span>Help</span>
+</a>
+<a class="flex items-center gap-stack-sm px-4 py-3 rounded-DEFAULT text-on-surface-variant dark:text-on-tertiary-container hover:text-primary dark:hover:text-primary-fixed hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200 ease-in-out" href="../employee_login_chequeai/code.html">
+<span class="material-symbols-outlined">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim text-primary dark:text-primary-fixed-dim font-body-md text-body-md docked full-width top-0 sticky z-40 border-b border-outline-variant dark:border-outline flat no shadows flex justify-between items-center h-16 px-margin-page ml-64 transition-all duration-300">
+<div class="flex items-center gap-stack-lg h-full">
+<h2 class="font-headline-md text-headline-md font-black text-on-surface dark:text-inverse-on-surface hidden">ChequeAI</h2>
+<nav class="flex h-full gap-stack-md">
+<a class="flex items-center text-on-surface-variant dark:text-on-tertiary-container hover:text-secondary dark:hover:text-secondary-fixed transition-all duration-300" href="#">Queue</a>
+<a class="flex items-center text-on-surface-variant dark:text-on-tertiary-container hover:text-secondary dark:hover:text-secondary-fixed transition-all duration-300" href="#">Fraud Monitor</a>
+<a class="flex items-center text-primary dark:text-primary-fixed font-semibold border-b-2 border-primary transition-all duration-300" href="#">Audit Log</a>
+</nav>
+</div>
+<div class="flex items-center gap-stack-md">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-DEFAULT font-body-sm focus:outline-none focus:ring-2 focus:ring-secondary-container w-64" placeholder="Search transactions..." type="text"/>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<img alt="Employee Profile" class="w-8 h-8 rounded-full object-cover" data-alt="A small, professional avatar portrait of a bank employee. The image is circular, showing a person with a neutral, focused expression in modern corporate attire. The lighting is soft and flat, suitable for a light-mode enterprise dashboard profile picture. High quality, clear, minimalist background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjRkdBFkyWra64msAx-ZqDCABmW3CQHJsQhyDnWT01S-MHl0TX0L_gIkwmrRPuxYu_i3bnmCummIPLZHT5qONbZWoMfCyzmX8JFUHVA66mLWZFbYCqTwZwcLjwubvPeDrS1nBDQpOljyNYAQQg5ER8ABIrHXS-AXvnYSrI-vdfFpxRV6GnoYtoqFZZoYwOeNtf3BtHgvLfMUAezmQlbDb9fw87izUzE1i62CO0jfZ3Q-WjYMjAee4C"/>
+</button>
+</div>
+</header>
+<!-- Main Workspace -->
+<main class="ml-64 p-margin-page max-w-container-max mx-auto">
+<div class="flex flex-col gap-stack-lg">
+<!-- Page Header & Filters -->
+<div class="flex flex-col gap-stack-md">
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-stack-xs">Transaction History</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Comprehensive audit trail of all processed cheques.</p>
+</div>
+<div class="flex gap-stack-sm">
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container-lowest border border-[#E2E8F0] rounded-DEFAULT font-data-mono text-primary text-body-sm hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                            Last 30 Days
+                        </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container-lowest border border-[#E2E8F0] rounded-DEFAULT font-data-mono text-primary text-body-sm hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                            Filter
+                        </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-DEFAULT font-data-mono text-body-sm hover:bg-[#1a2336] transition-colors">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                            Export
+                        </button>
+</div>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-stack-sm flex-wrap">
+<span class="inline-flex items-center gap-1 px-3 py-1 bg-surface-container-high rounded-full font-body-sm text-on-surface">
+                        Status: Approved
+                        <button class="hover:text-error ml-1"><span class="material-symbols-outlined text-[14px]">close</span></button>
+</span>
+<span class="inline-flex items-center gap-1 px-3 py-1 bg-surface-container-high rounded-full font-body-sm text-on-surface">
+                        Risk: Low
+                        <button class="hover:text-error ml-1"><span class="material-symbols-outlined text-[14px]">close</span></button>
+</span>
+<button class="text-secondary font-body-sm hover:underline">Clear all</button>
+</div>
+</div>
+<!-- Data Table -->
+<div class="bg-surface-container-lowest border border-[#E2E8F0] rounded-lg overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-[#E2E8F0]">
+<th class="p-[12px_16px] font-label-caps text-label-caps text-on-surface-variant font-bold uppercase tracking-wider">Txn ID</th>
+<th class="p-[12px_16px] font-label-caps text-label-caps text-on-surface-variant font-bold uppercase tracking-wider">Date/Time</th>
+<th class="p-[12px_16px] font-label-caps text-label-caps text-on-surface-variant font-bold uppercase tracking-wider">Account</th>
+<th class="p-[12px_16px] font-label-caps text-label-caps text-on-surface-variant font-bold uppercase tracking-wider">Amount</th>
+<th class="p-[12px_16px] font-label-caps text-label-caps text-on-surface-variant font-bold uppercase tracking-wider">Risk Level</th>
+<th class="p-[12px_16px] font-label-caps text-label-caps text-on-surface-variant font-bold uppercase tracking-wider">Status</th>
+<th class="p-[12px_16px] font-label-caps text-label-caps text-on-surface-variant font-bold uppercase tracking-wider text-right">Action</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm">
+<!-- Row 1 -->
+<tr class="border-b border-[#E2E8F0] hover:bg-[#F1F5F9] transition-colors cursor-pointer" onclick="document.getElementById('detail-modal').classList.remove('hidden')">
+<td class="p-[12px_16px] font-data-mono text-data-mono text-primary">#TX-99382A</td>
+<td class="p-[12px_16px] text-on-surface-variant">2023-10-27 14:32:01</td>
+<td class="p-[12px_16px] font-data-mono text-data-mono">**** 4921</td>
+<td class="p-[12px_16px] font-data-mono text-data-mono font-bold">$12,450.00</td>
+<td class="p-[12px_16px]">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-[#E2E8F0] text-[#0F172A]">LOW</span>
+</td>
+<td class="p-[12px_16px]">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-[#dcfce7] text-[#166534]">APPROVED</span>
+</td>
+<td class="p-[12px_16px] text-right">
+<button class="text-secondary hover:text-secondary-container"><span class="material-symbols-outlined text-[20px]">visibility</span></button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="border-b border-[#E2E8F0] hover:bg-[#F1F5F9] transition-colors cursor-pointer">
+<td class="p-[12px_16px] font-data-mono text-data-mono text-primary">#TX-99382B</td>
+<td class="p-[12px_16px] text-on-surface-variant">2023-10-27 14:28:15</td>
+<td class="p-[12px_16px] font-data-mono text-data-mono">**** 8832</td>
+<td class="p-[12px_16px] font-data-mono text-data-mono font-bold">$450.00</td>
+<td class="p-[12px_16px]">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-[#fee2e2] text-[#991b1b]">HIGH</span>
+</td>
+<td class="p-[12px_16px]">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-[#fee2e2] text-[#991b1b]">REJECTED</span>
+</td>
+<td class="p-[12px_16px] text-right">
+<button class="text-secondary hover:text-secondary-container"><span class="material-symbols-outlined text-[20px]">visibility</span></button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="border-b border-[#E2E8F0] hover:bg-[#F1F5F9] transition-colors cursor-pointer">
+<td class="p-[12px_16px] font-data-mono text-data-mono text-primary">#TX-99382C</td>
+<td class="p-[12px_16px] text-on-surface-variant">2023-10-27 14:15:44</td>
+<td class="p-[12px_16px] font-data-mono text-data-mono">**** 1109</td>
+<td class="p-[12px_16px] font-data-mono text-data-mono font-bold">$1,200.00</td>
+<td class="p-[12px_16px]">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-[#fef3c7] text-[#92400e]">MEDIUM</span>
+</td>
+<td class="p-[12px_16px]">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-[#fef3c7] text-[#92400e]">PENDING</span>
+</td>
+<td class="p-[12px_16px] text-right">
+<button class="text-secondary hover:text-secondary-container"><span class="material-symbols-outlined text-[20px]">visibility</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="p-4 border-t border-[#E2E8F0] flex justify-between items-center text-on-surface-variant font-body-sm">
+<span>Showing 1-3 of 1,240</span>
+<div class="flex gap-2">
+<button class="p-1 border border-[#E2E8F0] rounded hover:bg-surface-container-low disabled:opacity-50"><span class="material-symbols-outlined text-[18px]">chevron_left</span></button>
+<button class="p-1 border border-[#E2E8F0] rounded hover:bg-surface-container-low"><span class="material-symbols-outlined text-[18px]">chevron_right</span></button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Detail View Modal (Hidden by default) -->
+<div class="hidden fixed inset-0 z-[100] bg-primary/20 backdrop-blur-sm flex items-center justify-center p-gutter" id="detail-modal">
+<div class="bg-surface-container-lowest w-full max-w-5xl rounded-xl shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)] border border-[#E2E8F0] flex flex-col max-h-[921px]">
+<!-- Modal Header -->
+<div class="flex justify-between items-center p-stack-lg border-b border-[#E2E8F0]">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-1">Transaction Detail: <span class="font-data-mono text-secondary">#TX-99382A</span></h3>
+<p class="font-body-sm text-on-surface-variant">Processed on Oct 27, 2023 at 14:32:01 EST</p>
+</div>
+<button class="text-on-surface-variant hover:text-primary" onclick="document.getElementById('detail-modal').classList.add('hidden')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Modal Body - Bento Grid -->
+<div class="flex-1 overflow-y-auto p-stack-lg grid grid-cols-12 gap-gutter">
+<!-- Left Col: Image & Scan Results -->
+<div class="col-span-12 lg:col-span-8 flex flex-col gap-stack-lg">
+<!-- Cheque Image Card -->
+<div class="bg-surface-bright border border-[#E2E8F0] rounded-lg p-stack-md">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant font-bold uppercase mb-stack-sm">Analyzed Document</h4>
+<div class="relative w-full aspect-[2.1/1] bg-surface-container rounded border border-outline-variant overflow-hidden group">
+<!-- Overlay to simulate OCR highlights -->
+<div class="absolute inset-0 bg-primary/5 hidden group-hover:block transition-all z-10 pointer-events-none"></div>
+<div class="absolute top-[20%] right-[10%] w-[30%] h-[15%] border-2 border-secondary/50 bg-secondary/10 hidden group-hover:block z-20 pointer-events-none rounded-sm"></div>
+<div class="absolute top-[40%] left-[10%] w-[50%] h-[10%] border-2 border-[#166534]/50 bg-[#166534]/10 hidden group-hover:block z-20 pointer-events-none rounded-sm"></div>
+<img alt="Scanned Cheque" class="w-full h-full object-cover grayscale opacity-90 mix-blend-multiply" data-alt="A highly detailed, ultra-realistic image of a standard bank cheque filled out with handwritten amounts and signatures. The cheque is flat against a clean white background, evenly lit as if scanned by a high-end document scanner. Professional enterprise finance context, crisp text, subtle micro-printing visible." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXCw4G2OT4uDIvgGgC2L4yZLM5qHXtfAgW_ZKHRvDgXQE8QkELBaDYl_-Q-5epFaabGpqh1v35EGCnyWrsZ5PNkUQcE_0VBxI4PTr0GEPaVu4Wjm0p_4jaAweNRP5Ct3g08Bxs33Qc1IxUUNPsXikmmyV8mfihSl9p1M_dueD2qqXp1YJkAQmzIzWkbNCA60y8x19YOpvknEC86sNg0U2E9U44Wf_9WGhOMgPQhL0TG-waedwg9XE8"/>
+</div>
+<div class="flex gap-4 mt-4">
+<button class="text-secondary font-body-sm hover:underline flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">zoom_in</span> Zoom</button>
+<button class="text-secondary font-body-sm hover:underline flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">flip_camera_android</span> View Back</button>
+</div>
+</div>
+<!-- OCR Extraction Table -->
+<div class="bg-surface-bright border border-[#E2E8F0] rounded-lg overflow-hidden">
+<div class="p-stack-md border-b border-[#E2E8F0] bg-surface-container-low">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant font-bold uppercase">Data Extraction Confidence</h4>
+</div>
+<table class="w-full text-left font-body-sm">
+<tbody>
+<tr class="border-b border-[#E2E8F0]">
+<td class="p-[12px_16px] text-on-surface-variant w-1/3">Payee Name</td>
+<td class="p-[12px_16px] font-data-mono font-bold text-primary">Acme Corp Ltd.</td>
+<td class="p-[12px_16px] text-right"><span class="text-[#166534] font-data-mono text-[11px] bg-[#dcfce7] px-2 py-0.5 rounded">99.8% Match</span></td>
+</tr>
+<tr class="border-b border-[#E2E8F0]">
+<td class="p-[12px_16px] text-on-surface-variant w-1/3">Amount (Numeric)</td>
+<td class="p-[12px_16px] font-data-mono font-bold text-primary">$12,450.00</td>
+<td class="p-[12px_16px] text-right"><span class="text-[#166534] font-data-mono text-[11px] bg-[#dcfce7] px-2 py-0.5 rounded">99.9% Match</span></td>
+</tr>
+<tr class="border-b border-[#E2E8F0]">
+<td class="p-[12px_16px] text-on-surface-variant w-1/3">Amount (Written)</td>
+<td class="p-[12px_16px] font-data-mono font-bold text-primary">Twelve thousand four hundred fifty</td>
+<td class="p-[12px_16px] text-right"><span class="text-[#166534] font-data-mono text-[11px] bg-[#dcfce7] px-2 py-0.5 rounded">98.5% Match</span></td>
+</tr>
+<tr>
+<td class="p-[12px_16px] text-on-surface-variant w-1/3">Signature</td>
+<td class="p-[12px_16px] font-data-mono font-bold text-primary">Present (Verified)</td>
+<td class="p-[12px_16px] text-right"><span class="text-[#92400e] font-data-mono text-[11px] bg-[#fef3c7] px-2 py-0.5 rounded">87.2% Match</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Right Col: Audit Trail & Actions -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-stack-lg">
+<!-- Fraud Risk Summary -->
+<div class="bg-surface-bright border border-[#E2E8F0] rounded-lg p-stack-md flex flex-col items-center justify-center text-center">
+<div class="w-16 h-16 rounded-full bg-[#dcfce7] flex items-center justify-center mb-3">
+<span class="material-symbols-outlined text-[32px] text-[#166534]">verified_user</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-primary mb-1">Low Risk</h4>
+<p class="font-body-sm text-on-surface-variant mb-4">AI Score: 12/100 (Safe)</p>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#166534] w-[12%]"></div>
+</div>
+</div>
+<!-- Audit Log Timeline -->
+<div class="bg-surface-bright border border-[#E2E8F0] rounded-lg p-stack-md flex-1">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant font-bold uppercase mb-stack-md">System Audit Trail</h4>
+<div class="relative pl-6 border-l border-[#E2E8F0] flex flex-col gap-4 font-body-sm">
+<div class="relative">
+<div class="absolute -left-[29px] top-1 w-2 h-2 bg-[#166534] rounded-full ring-4 ring-surface-bright"></div>
+<p class="font-bold text-primary">Manual Approval</p>
+<p class="text-on-surface-variant text-[11px] font-data-mono mb-1">14:32:01 - J. Doe (ID: 8842)</p>
+<p class="text-on-surface-variant">Operator overrode signature warning and approved.</p>
+</div>
+<div class="relative">
+<div class="absolute -left-[29px] top-1 w-2 h-2 bg-secondary rounded-full ring-4 ring-surface-bright"></div>
+<p class="font-bold text-primary">Flagged for Review</p>
+<p class="text-on-surface-variant text-[11px] font-data-mono mb-1">14:30:12 - ChequeAI Engine</p>
+<p class="text-on-surface-variant">Signature confidence (87.2%) below auto-approve threshold (90%).</p>
+</div>
+<div class="relative">
+<div class="absolute -left-[29px] top-1 w-2 h-2 bg-outline-variant rounded-full ring-4 ring-surface-bright"></div>
+<p class="font-bold text-primary">OCR Scan Complete</p>
+<p class="text-on-surface-variant text-[11px] font-data-mono mb-1">14:30:11 - ChequeAI Engine</p>
+</div>
+<div class="relative">
+<div class="absolute -left-[29px] top-1 w-2 h-2 bg-outline-variant rounded-full ring-4 ring-surface-bright"></div>
+<p class="font-bold text-primary">Document Uploaded</p>
+<p class="text-on-surface-variant text-[11px] font-data-mono mb-1">14:30:00 - Batch System</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal Footer / Actions -->
+<div class="p-stack-md border-t border-[#E2E8F0] bg-surface-container-lowest flex justify-end gap-stack-sm rounded-b-xl">
+<button class="px-4 py-2 border border-[#E2E8F0] rounded-DEFAULT font-data-mono text-primary text-body-sm hover:bg-surface-container-low transition-colors">
+                    Re-Analyze
+                </button>
+<button class="px-4 py-2 bg-primary text-on-primary rounded-DEFAULT font-data-mono text-body-sm hover:bg-[#1a2336] transition-colors">
+                    Download Report PDF
+                </button>
+</div>
+</div>
+</div>
+</body></html>
