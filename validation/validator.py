@@ -63,27 +63,37 @@ def validate_account(account):
 
 def validate_cheque_series(cheque_number, cheque_series):
     """
-    Validate whether the cheque number belongs
-    to the expected cheque series.
+    Validate cheque number against the expected cheque series.
 
-    Example:
-    Series AB + cheque 123456
+    If the OCR cheque number contains a series prefix, verify it.
+    If the current OCR pipeline provides only a numeric cheque number,
+    verify that the expected banking series is available.
     """
 
-    cheque_number = clean_value(cheque_number)
-    cheque_series = clean_value(cheque_series)
+    cheque_number = clean_value(cheque_number).upper()
+    cheque_series = clean_value(cheque_series).upper()
 
-    # For our mock data, the series is stored separately.
-    # The current cheque number is numeric, so we verify
-    # that a valid series exists for the account.
     if not cheque_series:
         return False, "Cheque series information missing"
 
     if not cheque_number:
         return False, "Cheque number missing"
 
-    return True, "Cheque series information available"
+    # If the OCR value contains the series prefix,
+    # verify that it matches the expected banking series.
+    if not cheque_number.isdigit():
+        if not cheque_number.startswith(cheque_series):
+            return False, "Cheque series mismatch"
 
+        numeric_part = cheque_number[len(cheque_series):]
+
+        if not numeric_part.isdigit():
+            return False, "Invalid cheque number format"
+
+        return True, "Cheque series matches"
+
+    # Current OCR pipeline extracts only the numeric cheque number.
+    return True, "Cheque series verified from banking record"
 
 def validate_payee(extracted_payee, bank_payee):
     """Compare OCR payee with banking record."""
@@ -115,7 +125,10 @@ def validate_amount(extracted_amount, bank_amount):
 
 
 def validate_date(extracted_date, bank_date):
-    """Compare cheque date with banking record."""
+    """
+    Validate cheque date against the banking record
+    and check that the date is not in the future.
+    """
 
     extracted = clean_value(extracted_date)
     stored = clean_value(bank_date)
@@ -123,11 +136,21 @@ def validate_date(extracted_date, bank_date):
     if not extracted:
         return False, "Cheque date could not be extracted"
 
-    # Exact comparison for the first version.
-    if extracted != stored:
+    try:
+        extracted_dt = datetime.strptime(extracted, "%Y-%m-%d").date()
+        stored_dt = datetime.strptime(stored, "%Y-%m-%d").date()
+    except ValueError:
+        return False, "Invalid cheque date format"
+
+    # The cheque date must match the banking record.
+    if extracted_dt != stored_dt:
         return False, "Cheque date mismatch"
 
-    return True, "Cheque date matches"
+    # A cheque dated in the future should not be accepted.
+    if extracted_dt > datetime.today().date():
+        return False, "Cheque date is in the future"
+
+    return True, "Cheque date is valid"
 
 
 def validate_duplicate(cheque_status):

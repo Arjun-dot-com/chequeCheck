@@ -1,6 +1,8 @@
 import os
 import shutil
 import uuid
+import json
+from pathlib import Path
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -32,6 +34,24 @@ except Exception as e:
 
 UPLOAD_DIR = "temp_uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+AUDIT_FILE = (
+    Path(__file__).resolve().parent
+    / "bank_data"
+    / "audit_log.json"
+)
+
+
+@app.get("/audit")
+async def get_audit_log():
+    if not AUDIT_FILE.exists():
+        return []
+
+    try:
+        with open(AUDIT_FILE, "r", encoding="utf-8") as file:
+            return json.load(file)
+    except (json.JSONDecodeError, OSError):
+        return []
 
 @app.get("/health")
 async def health_check():

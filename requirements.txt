@@ -7,7 +7,7 @@ fastapi>=0.100.0
 uvicorn>=0.23.0
 python-multipart>=0.0.6
 PyMuPDF>=1.23.0
-
+pytest>=8.0.0
 # NOTE: pytesseract is only a Python wrapper. You must separately install the
 # Tesseract OCR *binary* and make sure it's on your PATH (or set
 # pytesseract.pytesseract.tesseract_cmd in code) for OCR to work:
