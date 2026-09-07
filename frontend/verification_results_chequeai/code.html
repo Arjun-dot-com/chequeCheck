@@ -843,6 +843,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
 
+        /* =========================
+           CHEQUE IMAGE PREVIEW
+        ========================= */
+
+        if (storedResult.imageDataUrl) {
+
+            const imageEl =
+                document.getElementById('result-cheque-image');
+
+            const placeholderEl =
+                document.getElementById('image-placeholder');
+
+            imageEl.src = storedResult.imageDataUrl;
+            imageEl.classList.remove('hidden');
+            placeholderEl.classList.add('hidden');
+
+        }
+
+
         const extracted =
             ocrResult.extracted_data;
 

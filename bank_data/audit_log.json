@@ -1,0 +1,86 @@
+[
+  {
+    "timestamp": "2026-09-07T10:16:42.159690",
+    "extracted_data": {
+      "micr_code": {
+        "value": "",
+        "confidence": 0.0
+      },
+      "date": {
+        "value": "",
+        "confidence": 0.0
+      },
+      "payee": {
+        "value": "",
+        "confidence": 0.0
+      },
+      "amount": {
+        "value": "",
+        "confidence": 0.0
+      },
+      "cheque_number": {
+        "value": "",
+        "confidence": 0.0
+      },
+      "bank_name": {
+        "value": "",
+        "confidence": 0.0
+      }
+    },
+    "validation": {
+      "is_signed": false,
+      "amount_tamper_flag": false,
+      "payee_tamper_flag": false
+    },
+    "decision": "REJECT",
+    "risk_score": 100,
+    "matched": false,
+    "validation_passed": null,
+    "validation_checks": {},
+    "reasons": [
+      "Cheque number could not be extracted"
+    ]
+  },
+  {
+    "timestamp": "2026-09-07T10:26:08.156637",
+    "extracted_data": {
+      "micr_code": {
+        "value": "",
+        "confidence": 0.0
+      },
+      "date": {
+        "value": "",
+        "confidence": 0.0
+      },
+      "payee": {
+        "value": "",
+        "confidence": 0.0
+      },
+      "amount": {
+        "value": "",
+        "confidence": 0.0
+      },
+      "cheque_number": {
+        "value": "",
+        "confidence": 0.0
+      },
+      "bank_name": {
+        "value": "",
+        "confidence": 0.0
+      }
+    },
+    "validation": {
+      "is_signed": false,
+      "amount_tamper_flag": false,
+      "payee_tamper_flag": false
+    },
+    "decision": "REJECT",
+    "risk_score": 100,
+    "matched": false,
+    "validation_passed": null,
+    "validation_checks": {},
+    "reasons": [
+      "Cheque number could not be extracted"
+    ]
+  }
+]

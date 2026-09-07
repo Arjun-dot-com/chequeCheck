@@ -442,12 +442,16 @@
                 statusStages.classList.remove('hidden');
                 btnCancel.classList.remove('hidden');
 
+                let imageDataUrl = null;
                 if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        chequePreview.src = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
+                    imageDataUrl = await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            chequePreview.src = e.target.result;
+                            resolve(e.target.result);
+                        };
+                        reader.readAsDataURL(file);
+                    });
                 }
 
                 // Show processing indicator
@@ -474,6 +478,7 @@
                     const resultToStore = {
                         apiResponse: result,
                         filename: file.name,
+                        imageDataUrl: imageDataUrl,
                         timestamp: new Date().toISOString()
                     };
                     sessionStorage.setItem('chequeai_last_result', JSON.stringify(resultToStore));
