@@ -42,7 +42,8 @@ class ChequeProcessingPipeline:
         
         # 3. OCR Extraction
         ocr_results = self.ocr_engine.extract_all_text(mapped_rois)
-        
+
+                
         # 4. Fraud Detection
         # Check signature presence
         is_signed = False

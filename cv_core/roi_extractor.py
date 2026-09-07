@@ -10,7 +10,13 @@ class ROIExtractor:
         if model_path is None:
             # Default path after running train_yolo.py
             current_dir = os.path.dirname(os.path.abspath(__file__))
-            model_path = os.path.join(current_dir, "models", "cheque_roi_extractor", "weights", "best.pt")
+            model_path = os.path.join(
+    os.path.dirname(current_dir),
+    "runs",
+    "cheque_training",
+    "weights",
+    "best.pt"
+)
             
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"YOLO model not found at {model_path}. Please train the model first.")

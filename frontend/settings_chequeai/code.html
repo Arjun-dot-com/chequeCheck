@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChequeAI - Settings</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f5f7fa;
+            color: #222;
+            transition: 0.3s;
+        }
+
+        header {
+            background: white;
+            padding: 20px 40px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: 0.3s;
+        }
+
+        .setting {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .setting:last-child {
+            border-bottom: none;
+        }
+
+        input {
+            width: 100px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .status {
+            color: green;
+            font-weight: bold;
+        }
+
+        button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #333;
+            color: white;
+            margin-left: 8px;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        /* DARK THEME */
+        body.dark {
+            background: #121212;
+            color: #eeeeee;
+        }
+
+        body.dark header,
+        body.dark .card {
+            background: #1e1e1e;
+            color: #eeeeee;
+        }
+
+        body.dark header {
+            border-bottom-color: #444;
+        }
+
+        body.dark .setting {
+            border-bottom-color: #444;
+        }
+
+        body.dark input {
+            background: #2a2a2a;
+            color: white;
+            border-color: #555;
+        }
+
+        body.dark small {
+            color: #bbbbbb;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>ChequeAI Settings</h1>
+
+    <div>
+        <button onclick="toggleTheme()">🌙 Toggle Theme</button>
+
+        <button onclick="window.location.href='../operations_dashboard_chequeai/code.html'">
+            Back to Dashboard
+        </button>
+    </div>
+</header>
+
+<div class="container">
+
+    <div class="card">
+        <h2>System Settings</h2>
+
+        <div class="setting">
+            <div>
+                <strong>OCR Confidence Threshold</strong>
+                <br>
+                <small>Minimum confidence required for OCR results.</small>
+            </div>
+
+            <input type="number" id="ocrThreshold" value="70" min="0" max="100">
+        </div>
+
+        <div class="setting">
+            <div>
+                <strong>Fraud Risk Threshold</strong>
+                <br>
+                <small>Risk score at which manual review begins.</small>
+            </div>
+
+            <input type="number" id="fraudThreshold" value="20" min="0" max="100">
+        </div>
+
+        <div class="setting">
+            <div>
+                <strong>API Status</strong>
+                <br>
+                <small>Connection to the ChequeAI backend.</small>
+            </div>
+
+            <span class="status" id="apiStatus">
+                Checking...
+            </span>
+        </div>
+
+    </div>
+
+    <div class="card">
+        <button onclick="saveSettings()">Save Settings</button>
+        <span id="savedMessage"></span>
+    </div>
+
+</div>
+
+<script>
+
+    /* THEME */
+    function toggleTheme() {
+        document.body.classList.toggle("dark");
+
+        if (document.body.classList.contains("dark")) {
+            localStorage.setItem("theme", "dark");
+        } else {
+            localStorage.setItem("theme", "light");
+        }
+    }
+
+    /* SAVE SETTINGS */
+    function saveSettings() {
+
+        localStorage.setItem(
+            "ocrThreshold",
+            document.getElementById("ocrThreshold").value
+        );
+
+        localStorage.setItem(
+            "fraudThreshold",
+            document.getElementById("fraudThreshold").value
+        );
+
+        document.getElementById("savedMessage").innerText =
+            " Settings saved successfully!";
+    }
+
+    /* CHECK API */
+    async function checkAPI() {
+
+        try {
+
+            const response =
+                await fetch("http://127.0.0.1:8000/audit");
+
+            if (response.ok) {
+
+                document.getElementById("apiStatus").innerText =
+                    "ONLINE";
+
+            } else {
+
+                document.getElementById("apiStatus").innerText =
+                    "OFFLINE";
+            }
+
+        } catch (error) {
+
+            document.getElementById("apiStatus").innerText =
+                "OFFLINE";
+        }
+    }
+
+    /* LOAD SETTINGS */
+    window.onload = function() {
+
+        const ocr =
+            localStorage.getItem("ocrThreshold");
+
+        const fraud =
+            localStorage.getItem("fraudThreshold");
+
+        if (ocr) {
+            document.getElementById("ocrThreshold").value = ocr;
+        }
+
+        if (fraud) {
+            document.getElementById("fraudThreshold").value = fraud;
+        }
+
+        /* LOAD THEME */
+        if (localStorage.getItem("theme") === "dark") {
+            document.body.classList.add("dark");
+        }
+
+        checkAPI();
+    };
+
+</script>
+
+</body>
+</html>
