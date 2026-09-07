@@ -125,14 +125,14 @@
 <span class="material-symbols-outlined">history</span>
                 History
             </a>
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="../transaction_history_audit_chequeai/code.html">
 <span class="material-symbols-outlined">assessment</span>
                 Reports
             </a>
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
-<span class="material-symbols-outlined">settings</span>
-                Settings
-            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="../settings_chequeai/code.html">
+    <span class="material-symbols-outlined">settings</span>
+    Settings
+</a>
 </nav>
 <div class="px-4 mt-auto space-y-1">
 <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200 ease-in-out" href="#">
@@ -150,9 +150,9 @@
 <!-- TopAppBar -->
 <header class="bg-surface border-b border-outline-variant docked full-width top-0 sticky z-40 flex justify-between items-center h-16 px-margin-page transition-all duration-300">
 <nav class="flex gap-6 h-full items-center">
-<a class="text-on-surface-variant hover:text-secondary h-full flex items-center font-body-md text-body-md transition-colors" href="#">Queue</a>
-<a class="text-on-surface-variant hover:text-secondary h-full flex items-center font-body-md text-body-md transition-colors" href="#">Fraud Monitor</a>
-<a class="text-on-surface-variant hover:text-secondary h-full flex items-center font-body-md text-body-md transition-colors" href="#">Audit Log</a>
+<a class="text-on-surface-variant hover:text-secondary h-full flex items-center font-body-md text-body-md transition-colors" href="../process_new_cheque_chequeai/code.html">Queue</a>
+<a class="text-on-surface-variant hover:text-secondary h-full flex items-center font-body-md text-body-md transition-colors" href="../verification_results_chequeai/code.html">Fraud Monitor</a>
+<a class="text-on-surface-variant hover:text-secondary h-full flex items-center font-body-md text-body-md transition-colors" href="../transaction_history_audit_chequeai/code.html">Audit Log</a>
 </nav>
 <div class="flex items-center gap-4">
 <button class="text-on-surface-variant hover:text-secondary transition-colors p-2 rounded-full hover:bg-surface-container-low">
@@ -172,10 +172,11 @@
 <h2 class="font-display-lg text-display-lg text-on-surface">Operations Overview</h2>
 <p class="font-body-lg text-body-lg text-on-surface-variant mt-2">Real-time processing metrics and recent activity.</p>
 </div>
-<button class="bg-primary text-on-primary px-6 py-3 rounded-lg font-body-md text-body-md font-semibold hover:bg-surface-tint transition-colors flex items-center gap-2 shadow-sm">
-<span class="material-symbols-outlined">add</span>
-                        Process New Cheque
-                    </button>
+<button onclick="window.location.href='../process_new_cheque_chequeai/code.html'"
+class="bg-primary text-on-primary px-6 py-3 rounded-lg font-body-md text-body-md font-semibold hover:bg-surface-tint transition-colors flex items-center gap-2 shadow-sm">
+    <span class="material-symbols-outlined">add</span>
+    Process New Cheque
+</button>
 </div>
 <!-- Bento Grid for Stats -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
