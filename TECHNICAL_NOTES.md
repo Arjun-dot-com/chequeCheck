@@ -1,239 +1,289 @@
-# Technical Notes (CV/ML Backend)
+# Technical Notes: CV/ML Backend
 
-Internal reference for whoever works on the CV/ML side of this repo.
-Covers the tech stack and why each piece was picked, how a request flows
-through the system, known bugs that were fixed, and remaining gaps.
+This document describes the implemented architecture, model lifecycle, data
+flow, and known limitations. It reflects the current code rather than the
+original Tesseract/OpenCV-heuristic prototype.
 
-## Tech stack
+## Architecture
 
-| Piece | Choice | Why |
+| Layer | Implementation | Responsibility |
 |---|---|---|
-| Web framework | **FastAPI** + Uvicorn | Async, automatic `multipart/form-data` file upload handling, free interactive docs at `/docs` (handy for manual testing without writing a client), minimal boilerplate compared to Flask/Django for a small single-purpose API. |
-| Image ops / preprocessing | **OpenCV (`opencv-python`)** | Industry-standard for classic CV (grayscale, blur, thresholding, affine warps for deskew). Fast, well-documented, no training required for these steps. |
-| Region detection | **Ultralytics YOLOv8 (nano)** | Needed to locate 7 different field regions (payee, amount, date, account no., cheque no., bank name, signature) on cheques that vary in layout. A single trainable object detector generalizes across cheque templates far better than hand-tuned fixed-coordinate cropping would. "Nano" size was chosen for fast CPU inference/training given no GPU is currently used (`device="cpu"` in `train_yolo.py`) — swap to a bigger variant (`yolov8s`/`m`) if accuracy needs outgrow nano's capacity once more labeled data exists. |
-| Text extraction | **Tesseract OCR (via `pytesseract`)** | Free, offline, no per-call cost or network dependency (unlike Google Vision / Azure AI Vision, which the original brief also suggested) — appropriate for a system that may process PII and shouldn't have to ship every cheque image to a third party. Per-field Tesseract configs (`--psm 7` = "treat as single line", plus character whitelists) are used because each field is a small single-line crop, not a full-page document — this measurably improves accuracy over default settings on small crops. |
-| PDF handling | **PyMuPDF (`pymupdf`, import name historically `fitz`)** | Renders the first page of an uploaded PDF to an image before the rest of the pipeline (which is OpenCV-based and can't read PDFs directly) sees it. Chosen over `pdf2image` because it has no external system dependency (`pdf2image` needs the Poppler binary installed separately, another Tesseract-style setup headache); PyMuPDF ships everything in the wheel. |
-| Fraud heuristics | Plain OpenCV (adaptive threshold, morphology, Canny edges, Laplacian variance) | Deliberately simple, explainable placeholders (see "Known gaps" below) rather than a trained anomaly-detection model, since there's no labeled fraud dataset yet. |
+| API | FastAPI + Uvicorn | Multipart uploads, health reporting, response schema, cleanup |
+| Image processing | OpenCV + PyMuPDF | Decode images/PDF page one, grayscale, denoise, binarize, deskew |
+| ROI detection | Ultralytics YOLOv8-nano | Locate bank, payee, account, amount, cheque number, date, and signature |
+| Handwriting OCR | Microsoft `trocr-base-handwritten` | Generate text from each tightly cropped ROI |
+| Similarity model | PyTorch Siamese CNN | Shared 128-D features for signature verification and cursive word spotting |
+| PDF rendering | PyMuPDF | Convert the first PDF page into a BGR OpenCV image |
+
+Tesseract, ink-density rules, Canny edge density, and Laplacian-variance fraud
+rules are no longer used by the CV pipeline.
+
+## Device selection
+
+TrOCR and the SNN use:
+
+```python
+torch.device("cuda" if torch.cuda.is_available() else "cpu")
+```
+
+The loaded models are moved to that device and put into evaluation mode. SNN
+inference uses `torch.no_grad()` and TrOCR generation uses
+`torch.inference_mode()`.
+
+## Model lifecycle
+
+`app.py` constructs one global `ChequeProcessingPipeline`. Its constructor
+creates one instance each of:
+
+- `ChequePreprocessor`
+- `ROIExtractor` and its YOLO model
+- `OCREngine`, `TrOCRProcessor`, and `VisionEncoderDecoderModel`
+- `FraudChecker` and its single shared `SNNVerifier`
+
+Route handlers reuse these instances. They never load models per request. A
+process-wide lock serializes complete inference calls to constrain CPU and RAM
+spikes. With multiple Uvicorn workers, each worker is a separate process and
+therefore owns a separate model copy; use worker counts deliberately.
+
+If startup fails, `app.py` keeps the service alive with `pipeline = None`.
+`GET /health` then returns `pipeline_ready: false`, and `POST /scan` returns
+`503`.
 
 ## Request flow
 
-```
-POST /scan (multipart file)
+```text
+POST /scan
+  file=<cheque>
+  reference_signature=<optional image>
+  reference_amount=<optional image>
         |
         v
- app.py: save upload to temp_uploads/<uuid>.<ext>
+app.py
+  validate extensions
+  save each upload as temp_uploads/<uuid>.<allowed-extension>
         |
         v
- ChequeProcessingPipeline.process_cheque(path)   [cv_core/pipeline.py]
+ChequeProcessingPipeline.process_cheque(...)
         |
-        |-- 1. ChequePreprocessor.preprocess(path)      [preprocessor.py]
-        |        load_image (PDF -> PyMuPDF render, else cv2.imread)
-        |        -> grayscale -> Gaussian blur -> Otsu binarize -> deskew
-        |        returns (deskewed_binary, original_color_image)
+        +-- 1. ChequePreprocessor.preprocess
+        |      image: cv2.imread
+        |      PDF: render first page at 300 DPI
+        |      grayscale -> Gaussian blur -> Otsu -> deskew
         |
-        |-- 2. ROIExtractor.extract_all(original_color_image)  [roi_extractor.py]
-        |        runs YOLOv8 inference, crops every detected box (conf > 0.3)
-        |        -> {class_name: cropped_ndarray} e.g. {"Amt": <crop>, "Sign": <crop>, ...}
+        +-- 2. ROIExtractor.extract_all(original BGR image)
+        |      YOLO inference -> non-degenerate crops above 0.3 confidence
         |
-        |-- 3. field-name mapping (YOLO class names -> OCR config keys)
-        |        e.g. "DateIss" -> "date", "ReceiverName" -> "payee", "AcNo" -> "micr"
+        +-- 3. Map detector names to API names
+        |      IssueBank    -> bank_name
+        |      ReceiverName -> payee
+        |      AcNo         -> micr_code
+        |      Amt          -> amount
+        |      ChqNo        -> cheque_number
+        |      DateIss      -> date
         |
-        |-- 4. OCREngine.extract_all_text(mapped_rois)   [ocr_engine.py]
-        |        Tesseract per crop with a field-specific --psm/whitelist config
-        |        -> {field: {"value": str, "confidence": float 0-100}}
+        +-- 4. OCREngine.extract_all_text
+        |      BGR crop -> RGB PIL image -> processor -> model.generate
+        |      -> {value: decoded text, confidence: 100.0}
         |
-        |-- 5. FraudChecker                                [fraud_checker.py]
-        |        isolate_signature(Sign crop)   -> is_signed: bool (ink-ratio heuristic)
-        |        detect_tampering(Amt crop)     -> amount_tamper_flag: bool (edge-density heuristic)
-        |        detect_tampering(ReceiverName crop) -> payee_tamper_flag: bool
+        +-- 5. FraudChecker
+               Sign + reference signature -> shared SNN -> is_signed
+               Amt + reference amount     -> shared SNN -> tamper flag
         |
         v
- JSON response: { status, extracted_data: {...}, validation: {...} }
+{status, extracted_data, validation}
         |
         v
- app.py: delete temp upload, return JSONResponse
+app.py finally block
+  delete all temporary files and close UploadFile handles
 ```
 
-The YOLO model and the two heavy engines (`ROIExtractor`, `OCREngine`,
-`FraudChecker`) are instantiated **once**, at module import time in
-`app.py` (`pipeline = ChequeProcessingPipeline()`), not per-request — YOLO
-weight loading is the expensive part, so it's paid once at process
-startup, not on every scan.
+Missing detector regions are represented as empty values with `0.0`
+confidence. Missing references skip SNN inference and retain unverified default
+flags.
 
-## Dataset & training
+## TrOCR implementation
 
-- Labeled samples live in `cv_core/data/samples/Images/` — one `.jpg` +
-  one YOLO-format `.txt` label file per cheque (`class x_center y_center
-  width height`, normalized 0–1). Currently ~112 images.
-- Classes (from `dataset.yaml`): `0 IssueBank, 1 ReceiverName, 2 AcNo,
-  3 Amt, 4 ChqNo, 5 DateIss, 6 Sign`.
-- `train.txt` / `test.txt` list the train/val image paths and are
-  currently **absolute Windows paths** tied to this machine
-  (`C:\Users\arjun\...`). If the project moves machines or the images get
-  relocated, regenerate these two files (one absolute or repo-root-relative
-  path per line) rather than hand-editing 112 lines.
-- `train_yolo.py` fine-tunes `yolov8n.pt` (auto-downloaded by Ultralytics
-  the first time it's needed if not already present at the repo root) and
-  writes results under `cv_core/models/cheque_roi_extractor/`.
+`OCREngine` loads:
 
-### Bug fixed: trained weights were landing in the wrong directory
-
-The original `train_yolo.py` passed a **relative** path,
-`project="cv_core/models"`, to `model.train()`. The installed Ultralytics
-version resolves a relative `project` against its *own* internal
-`runs/` directory rather than the current working directory — so training
-actually wrote to `runs/detect/cv_core/models/cheque_roi_extractor/`
-instead of `cv_core/models/cheque_roi_extractor/`. `ROIExtractor` looks for
-weights at the latter path, so it always raised `FileNotFoundError: YOLO
-model not found`, even after a training run had "succeeded." This is also
-why an incomplete `cheque_roi_extractor2/` directory (just an `args.yaml`
-and a plot, no weights) existed — a second training attempt that hit the
-same issue.
-
-Fix: `train_yolo.py` now builds `project` as an **absolute path**
-(`os.path.join(current_dir, "cv_core", "models")`), which Ultralytics
-uses literally regardless of its internal runs-dir settings. Also added
-`exist_ok=True` so re-running training overwrites the same run directory
-in place instead of accumulating `cheque_roi_extractor2`,
-`cheque_roi_extractor3`, etc. Verified by running a real training pass and
-confirming `best.pt`/`last.pt` land at
-`cv_core/models/cheque_roi_extractor/weights/`.
-
-**Important:** the checkpoint currently sitting in that `weights/` folder
-was only trained for **1 epoch** as a smoke test to prove this fix — it
-detects nothing useful (mAP ≈ 0). Retrain with a realistic epoch count
-(and ideally more labeled data) before treating detections as meaningful.
-
-## Other fixes made while reviewing this code
-
-- `fraud_checker.py`: `isolate_signature` and `detect_tampering` would
-  divide by zero / crash on an empty (`0` pixels) ROI crop. Added
-  early-return guards. This mattered because `roi_extractor.py` could hand
-  back a degenerate zero-size crop when a YOLO box's coordinates rounded
-  to `x1==x2` or `y1==y2`.
-- `roi_extractor.py`: now skips degenerate boxes (`x2 <= x1 or y2 <= y1`)
-  entirely rather than storing an empty crop.
-- `pipeline.py`: added `.size > 0` checks before calling fraud-check
-  functions on signature/amount/payee crops, and added `chq_no` /
-  `bank_name` to the OCR field mapping — these were being detected by
-  YOLO but silently discarded before (never OCR'd, never returned), even
-  though "cheque number" extraction is explicitly called out in the
-  project brief.
-- `ocr_engine.py`: collapsed four near-identical `read_*` methods into one
-  loop driven by the `configs` dict, and added `chq_no`/`bank_name`
-  configs to match the above.
-- `app.py`:
-  - Used the raw client-supplied filename directly in
-    `os.path.join(UPLOAD_DIR, file.filename)` — a filename like
-    `../../evil.py` would let a client write outside `temp_uploads/`
-    (path traversal). Fixed by generating a random filename
-    (`uuid4().hex`) and keeping only the original extension.
-  - `file.filename` could be `None` and would crash `.lower()` before
-    reaching the try/except. Added a null check.
-  - The generic `except Exception` handler was also catching
-    `HTTPException`s raised earlier in the same `try` block and
-    re-wrapping them into a less useful `500 Processing failed: 500:
-    <original detail>`. Added an explicit `except HTTPException: raise`
-    before the generic handler.
-  - Added `GET /health` and CORS middleware (`allow_origins=["*"]` for
-    now) — the frontend runs on a different origin/port and needs both to
-    integrate at all; see `FRONTEND_NOTES.md`.
-- Added PDF support: `.pdf` was accepted by `app.py`'s extension check but
-  `ChequePreprocessor.load_image` used `cv2.imread`, which cannot read
-  PDFs and would raise a confusing `FileNotFoundError` for any PDF upload.
-  Added a PyMuPDF-based render-first-page-to-image step, verified against
-  a generated test PDF.
-- Removed `cv_core/models/cheque_roi_extractor2/` (dead directory from
-  the failed second training attempt — no weights, just leftover
-  `args.yaml`/plot) and stray `__pycache__/` directories.
-
-## Known gaps / things not implemented here
-
-These are explicitly **out of scope for the CV/ML slice** per the
-project brief, or deliberately left simple pending more data:
-- No validation against real/mock banking records, no duplicate-cheque
-  detection, no approve/review/reject decision logic, no dashboard,
-  reporting, or audit trail — the brief expects these elsewhere in the
-  system (likely a separate backend service sitting between this API and
-  the frontend).
-- Fraud checks are simple, explainable heuristics (ink coverage, edge
-  density, Laplacian variance), not a trained anomaly/forgery-detection
-  model. They're a reasonable v1 given no labeled fraud dataset exists;
-  revisit once (if) one does.
-- `is_signed=false` doesn't distinguish "cheque genuinely unsigned" from
-  "signature region wasn't detected by YOLO at all."
-- No authentication/authorization on `/scan` — assumed to sit behind
-  another service or gateway that handles that.
-- No automated test suite yet (see "How to test" below for manual
-  verification steps).
-
-## How to test
-
-All commands assume the project virtualenv is active
-(`venv\Scripts\activate` on Windows) with `pip install -r
-requirements.txt` already run, and the Tesseract binary installed
-separately (see README's Setup section) — without Tesseract, OCR fields
-will just come back empty (`value: "", confidence: 0.0`) rather than
-crashing, so you can still test the detection half of the pipeline
-without it installed.
-
-### 1. Sanity-check imports and the trained model load
-
-```bash
-python -c "from cv_core.pipeline import ChequeProcessingPipeline; p = ChequeProcessingPipeline(); print('OK')"
+```text
+microsoft/trocr-base-handwritten
 ```
-If this raises `FileNotFoundError: YOLO model not found`, you need to run
-`python train_yolo.py` first.
 
-### 2. Run the pipeline directly on a sample image (no server needed)
+Supported OpenCV inputs are grayscale, BGR, and BGRA arrays. Each crop is
+converted to an RGB PIL image and passed to `TrOCRProcessor`. Token IDs from
+`model.generate()` are decoded with special tokens removed.
 
-```bash
-python -c "
-import json
-from cv_core.pipeline import ChequeProcessingPipeline
-p = ChequeProcessingPipeline()
-result = p.process_cheque('cv_core/data/samples/Images/Cheque083654.jpg')
-print(json.dumps(result, indent=2))
-"
+### Dependency compatibility
+
+`requirements.txt` constrains Transformers to `>=4.40,<5.0`. Transformers
+5.17 produced a backend-tokenizer construction failure for this checkpoint in
+the development environment. A clean install of the pinned requirements loads
+the expected `RobertaTokenizerFast`.
+
+### OCR limitations
+
+- TrOCR is a line recognizer, not a document-layout engine. Whole-cheque input
+  can collapse to meaningless output; YOLO crops are required.
+- `confidence: 100.0` is a contract placeholder, not model certainty. Real
+  confidence needs generation scores/logits and calibration.
+- The handwritten checkpoint performs poorly on MICR fonts, dense printed
+  labels, and multi-line bank logos. A MICR-specific recognizer should handle
+  routing, account, and cheque numbers.
+- The first use downloads model files from Hugging Face. Later loads use the
+  user cache.
+
+## Siamese network
+
+`cv_core/snn_model.py` contains a SigNet-style convolutional feature extractor:
+
+- Four convolution stages with ReLU activations
+- Local response normalization in the early stages
+- Max pooling
+- Fully connected projection to a normalized 128-D embedding
+
+The dual-branch `forward(img1, img2)` calls the same `forward_once` method for
+both inputs, guaranteeing shared parameters. `SNNVerifier` converts OpenCV
+crops to grayscale `1 x 1 x 105 x 105` tensors and compares embeddings with
+Euclidean distance.
+
+The contrastive training loss is:
+
+```text
+mean((1 - label) * D^2 + label * max(0, margin - D)^2)
 ```
-Swap in any file under `cv_core/data/samples/Images/` (or your own cheque
-photo). Check that `extracted_data` fields are populated with plausible
-values and reasonable `confidence` scores once you've trained for more
-than the smoke-test epoch count.
 
-### 3. Retrain the model for real
+`label = 0` means similar/genuine, `label = 1` means dissimilar/forged, and the
+default margin is `1.0`.
 
-```bash
-python -c "from train_yolo import train_model; train_model(epochs=50)"
+### Dual use
+
+One `SNNVerifier` instance is shared by both operations:
+
+1. Signature crop versus an enrolled genuine signature.
+2. Cursive amount crop versus a visual exemplar of the expected amount.
+
+The default match threshold is `0.5`. This threshold must be calibrated on
+held-out data for each task; a convenient default is not evidence of accuracy.
+
+## Checkpoints and training data
+
+### YOLO
+
+Default checkpoint:
+
+```text
+cv_core/models/cheque_roi_extractor/weights/best.pt
 ```
-Watch the per-class `mAP50` in the validation table at the end — with
-only ~112 images, don't expect production-grade numbers immediately, but
-you should see it climb well above the near-zero smoke-test baseline.
-Confirm weights land at
-`cv_core/models/cheque_roi_extractor/weights/best.pt` (they will, given
-the path fix above, but worth eyeballing once).
 
-### 4. Run the API and hit it manually
+Dataset classes from `dataset.yaml`:
 
-```bash
+```text
+0 IssueBank
+1 ReceiverName
+2 AcNo
+3 Amt
+4 ChqNo
+5 DateIss
+6 Sign
+```
+
+The repository's current YOLO result artifacts came from smoke testing and do
+not establish usable mAP. Retrain with more labeled images and a realistic
+epoch count. `train.txt` and `test.txt` currently contain absolute local paths
+and must be regenerated when the repository moves.
+
+### SNN
+
+Default checkpoint:
+
+```text
+cv_core/models/snn/best.pt
+```
+
+No production SNN checkpoint, training pipeline, signature enrollment store,
+or reference-word gallery is included yet. The API cannot become ready until a
+compatible state dictionary is provisioned.
+
+Model binaries (`*.pt`, `*.pth`, `*.ckpt`, `*.safetensors`, and model `.bin`
+files) are intentionally ignored by Git.
+
+## API stability and security
+
+- Client filenames are never used as destination paths. Only an allowlisted
+  suffix is retained, and `uuid4().hex` supplies the filename.
+- Cheque uploads accept PNG/JPG/JPEG/PDF. Reference uploads accept PNG/JPG/JPEG.
+- All saved paths are removed in a `finally` block on success or failure.
+- The `/scan` response contains exactly `status`, `extracted_data`, and
+  `validation` at the top level.
+- CORS is open for local development and must be restricted in production.
+- There is no authentication, request-size limit, persistent reference store,
+  rate limit, or server-side request timeout yet.
+- Exception text is currently included in `500` responses; production should
+  log internal details and return a generic public message.
+
+## Legacy validation package
+
+The `validation/` package and `GET /audit` endpoint remain in the repository,
+but `/scan` no longer appends `validation_result` because that violated the
+frontend's three-key response contract. The current scan route does not invoke
+bank-record decision logic or add new audit entries.
+
+## Testing
+
+### Syntax and unit tests
+
+```powershell
+python -m compileall -q app.py cv_core test_trocr.py test_cheque_fields.py
+python -m pytest -q
+```
+
+### Isolated TrOCR line
+
+```powershell
+python test_trocr.py "C:\path\to\cheque.jpeg" --crop X1 Y1 X2 Y2
+```
+
+### Demonstration multi-field extraction
+
+```powershell
+python test_cheque_fields.py "C:\path\to\X_017.jpeg"
+```
+
+The multi-field helper contains normalized crop regions tailored to the sample
+layout. It demonstrates why ROI extraction is necessary but does not replace
+YOLO.
+
+### API
+
+```powershell
 uvicorn app:app --reload
 ```
-Then either:
-- Open `http://127.0.0.1:8000/docs` (FastAPI's auto-generated Swagger UI)
-  and use the "Try it out" button on `POST /scan` to upload a file from
-  the browser — no extra tooling needed.
-- Or from another terminal:
-  ```bash
-  curl -F "file=@cv_core/data/samples/Images/Cheque083654.jpg" http://127.0.0.1:8000/scan
-  curl http://127.0.0.1:8000/health
-  ```
 
-### 5. Exercise the error paths
+Open `http://127.0.0.1:8000/docs`, or run:
 
-- Upload a non-image file (e.g. a `.txt`) → expect `400`.
-- Stop the server, delete/rename
-  `cv_core/models/cheque_roi_extractor/weights/best.pt`, restart, then
-  call `/scan` → expect `503` and `/health` to report
-  `"pipeline_ready": false`.
-- Upload a corrupted/truncated image file → expect a clean `500` with a
-  message, not an unhandled server crash.
+```powershell
+curl.exe -F "file=@C:\path\cheque.jpg" `
+  -F "reference_signature=@C:\path\signature.jpg" `
+  -F "reference_amount=@C:\path\amount-reference.jpg" `
+  http://127.0.0.1:8000/scan
+```
+
+### Error paths
+
+- Unsupported extension -> `400`
+- Missing required multipart `file` -> `422`
+- Missing/corrupt local model during startup -> `/health` is not ready and
+  `/scan` returns `503`
+- Corrupt image after upload -> `500`
+
+## Remaining production work
+
+- Train and calibrate YOLO and SNN with representative data.
+- Add a dedicated MICR recognizer.
+- Add persistent, access-controlled reference enrollment.
+- Return calibrated OCR confidence rather than `100.0`.
+- Add request-size/auth/rate controls and production CORS settings.
+- Add tests for TrOCR preprocessing, SNN checkpoint loading, pipeline mapping,
+  multipart cleanup, and the exact JSON contract.
+- Establish measured accuracy, latency, bias, and false-match rates before any
+  automated financial decision is allowed.

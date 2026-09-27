@@ -1,77 +1,113 @@
-import cv2
+"""Siamese-network checks for signatures and cursive cheque amounts."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
 import numpy as np
+import torch
+
+from .snn_model import SNNVerifier
+
+
+DEFAULT_SNN_MODEL_PATH = (
+    Path(__file__).resolve().parent / "models" / "snn" / "best.pt"
+)
+
 
 class FraudChecker:
-    def __init__(self):
-        pass
+    """Apply one shared SNN verifier to signatures and cursive word crops.
 
-    def isolate_signature(self, signature_roi):
-        """
-        Takes the signature ROI and cleans it up.
-        Returns a binary mask of the signature itself, ignoring background noise/lines.
-        """
-        if signature_roi is None or signature_roi.size == 0:
-            return None, False
+    The verifier is constructed once and reused by both public checks. This is
+    the dual-purpose SNN design: signature and amount comparisons use identical
+    learned features while supplying task-specific image pairs.
+    """
 
-        # Convert to grayscale if not already
-        if len(signature_roi.shape) == 3:
-            gray = cv2.cvtColor(signature_roi, cv2.COLOR_BGR2GRAY)
-        else:
-            gray = signature_roi.copy()
-            
-        # Apply adaptive thresholding to handle variations in pen ink and lighting
-        # We invert it so the signature (ink) is white (255) and background is black (0)
-        binary = cv2.adaptiveThreshold(
-            gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-            cv2.THRESH_BINARY_INV, 11, 2
+    def __init__(
+        self,
+        model_path: str | Path = DEFAULT_SNN_MODEL_PATH,
+        distance_threshold: float = 0.5,
+        device: str | torch.device | None = None,
+    ) -> None:
+        """Load the shared SNN verifier for fraud-related comparisons.
+
+        Args:
+            model_path: Path to trained Siamese-network weights.
+            distance_threshold: Maximum embedding distance considered a match.
+            device: Optional explicit PyTorch device. The verifier dynamically
+                chooses CUDA or CPU when this argument is omitted.
+        """
+        self.snn_verifier = SNNVerifier(
+            model_path=model_path,
+            threshold=distance_threshold,
+            device=device,
         )
-        
-        # Remove small noise (like printed dots or small background lines)
-        kernel = np.ones((2,2), np.uint8)
-        clean = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
-        
-        # Optional: Check if the signature area is completely empty
-        ink_pixels = cv2.countNonZero(clean)
-        total_pixels = clean.shape[0] * clean.shape[1]
-        ink_ratio = ink_pixels / total_pixels
-        
-        # If ink ratio is extremely low, it might be an unsigned cheque
-        is_signed = ink_ratio > 0.01 
-        
-        return clean, is_signed
 
-    def detect_tampering(self, roi_image):
+    @staticmethod
+    def _is_degenerate(crop: np.ndarray | None) -> bool:
+        """Return whether a crop is missing, invalid, or has no pixels."""
+        return not isinstance(crop, np.ndarray) or crop.size == 0
+
+    @staticmethod
+    def _distance_to_similarity(distance: float) -> float:
+        """Map unit-embedding Euclidean distance from ``[0, 2]`` to ``[1, 0]``."""
+        return float(np.clip(1.0 - (distance / 2.0), 0.0, 1.0))
+
+    def check_signature_authenticity(
+        self,
+        extracted_sign_crop: np.ndarray,
+        reference_sign_crop: np.ndarray,
+    ) -> dict[str, bool | float]:
+        """Compare an extracted signature with the account-holder reference.
+
+        Args:
+            extracted_sign_crop: Signature crop extracted from the cheque.
+            reference_sign_crop: Stored genuine signature image.
+
+        Returns:
+            ``is_signed`` is true only when the SNN considers the pair a match.
+            ``similarity_score`` is a normalized score where one is identical
+            and zero is maximally distant. Missing crops return a safe
+            non-match with zero similarity.
         """
-        Performs basic tampering detection.
-        Looks for unnatural edge densities or high-frequency noise that might 
-        indicate manual alteration, copy-pasting, or washing.
-        Returns a tampering score (higher means more likely tampered).
-        """
-        if roi_image is None or roi_image.size == 0:
-            return {"laplacian_variance": 0.0, "edge_density": 0.0, "flagged": False}
+        if self._is_degenerate(extracted_sign_crop) or self._is_degenerate(
+            reference_sign_crop
+        ):
+            return {"is_signed": False, "similarity_score": 0.0}
 
-        if len(roi_image.shape) == 3:
-            gray = cv2.cvtColor(roi_image, cv2.COLOR_BGR2GRAY)
-        else:
-            gray = roi_image.copy()
-
-        # Compute the Laplacian variance which is often used for blur detection,
-        # but extreme variations in small local regions can indicate splicing.
-        laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
-        
-        # Use Canny edge detection to find the number of sharp edges
-        edges = cv2.Canny(gray, 50, 150)
-        edge_density = cv2.countNonZero(edges) / (gray.shape[0] * gray.shape[1])
-        
-        # This is a very basic heuristic. Real tampering detection requires 
-        # analyzing the micro-printing background or using deep learning anomalies.
-        # For now, we return these raw metrics.
-        
-        metrics = {
-            "laplacian_variance": laplacian_var,
-            "edge_density": edge_density,
-            # If edge density is abnormally high in a supposed blank area, flag it
-            "flagged": edge_density > 0.15 
+        verification = self.snn_verifier.verify(
+            extracted_sign_crop, reference_sign_crop
+        )
+        distance = float(verification["distance_score"])
+        return {
+            "is_signed": bool(verification["is_match"]),
+            "similarity_score": self._distance_to_similarity(distance),
         }
-        
-        return metrics
+
+    def spot_cursive_amount(
+        self,
+        extracted_amount_crop: np.ndarray,
+        reference_amount_crop: np.ndarray,
+    ) -> dict[str, bool]:
+        """Compare a cursive amount crop with its expected visual reference.
+
+        Args:
+            extracted_amount_crop: Handwritten amount extracted from the cheque.
+            reference_amount_crop: Reference rendering or exemplar of the
+                expected amount.
+
+        Returns:
+            A dictionary containing ``amount_tamper_flag``. It is true when the
+            embedding distance exceeds the verifier's configured threshold.
+            Missing crops cannot be compared and therefore return false rather
+            than asserting tampering without evidence.
+        """
+        if self._is_degenerate(extracted_amount_crop) or self._is_degenerate(
+            reference_amount_crop
+        ):
+            return {"amount_tamper_flag": False}
+
+        verification = self.snn_verifier.verify(
+            extracted_amount_crop, reference_amount_crop
+        )
+        return {"amount_tamper_flag": not bool(verification["is_match"])}

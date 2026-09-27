@@ -1,80 +1,111 @@
-# Notes for the Frontend Developer
+# Frontend Integration Notes
 
-This document describes the CV/ML backend's API contract so the frontend
-can integrate against it without needing to read the Python code. If
-anything here looks wrong once you actually integrate, treat this file as
-the thing that's out of date — ping the CV/ML side to fix it or the code.
+This file is the source of truth for the browser-facing API contract. The CV
+service processes uploads in memory/local temporary storage and returns field
+extraction plus visual comparison flags. It does not authenticate users,
+settle payments, or return an approval/rejection decision.
 
-## What this service does (and doesn't do)
+## Base URL
 
-It's a single-purpose image-processing API: send it one cheque image, get
-back extracted fields + a couple of fraud signals. It does **not**:
-- store anything (uploaded files are processed and deleted immediately),
-- know about users, sessions, or auth,
-- validate against real bank records,
-- make an approve/review/reject decision — that business logic (and any
-  thresholds on the confidence/fraud scores below) belongs in your layer
-  or a service in between.
+Local development uses:
 
-## Base URL & running it locally
-
-By default: `http://127.0.0.1:8000` (via `uvicorn app:app --reload`).
-CORS is currently wide open (`allow_origins=["*"]`) so you can call it
-directly from a browser dev server on any port during development. This
-**should be locked down to your actual frontend origin(s)** before any
-real deployment — flag that to whoever owns deployment config.
-
-## Endpoints
-
-### `GET /health`
-
-Quick liveness/readiness check — call this on app load if you want to
-show a "backend unavailable" state instead of letting a scan silently
-fail.
-
-Response:
-```json
-{ "status": "ok", "pipeline_ready": true }
+```text
+http://127.0.0.1:8000
 ```
 
-`pipeline_ready: false` means the YOLO model failed to load (most likely
-it hasn't been trained yet on that environment) — `/scan` will return
-`503` until that's fixed on the backend side. There's nothing the
-frontend can do about this except show a friendly "processing is
-temporarily unavailable" message.
+CORS currently allows every origin for development. Restrict `allow_origins`
+to the deployed frontend origins before production.
 
-### `POST /scan`
+## `GET /health`
 
-Multipart form upload, field name **`file`**.
+Response:
 
-- Accepted types: `.png`, `.jpg`, `.jpeg`, `.pdf` (by extension — checked
-  client-side too if you want to fail fast before uploading).
-- One file per request. No batch endpoint currently.
+```json
+{
+  "status": "ok",
+  "pipeline_ready": true
+}
+```
 
-Example (fetch):
+`pipeline_ready: false` means at least one startup dependency failed. Common
+causes are missing YOLO/SNN checkpoints, missing Python dependencies, or a
+TrOCR download/cache problem. The frontend should disable scanning and show a
+temporary service-unavailable message.
+
+## `POST /scan`
+
+Send `multipart/form-data` with these fields:
+
+| Field | Required | Accepted extensions | Purpose |
+|---|---:|---|---|
+| `file` | Yes | `.png`, `.jpg`, `.jpeg`, `.pdf` | Cheque image; only page one of a PDF is processed |
+| `reference_signature` | No | `.png`, `.jpg`, `.jpeg` | Genuine account-holder signature reference |
+| `reference_amount` | No | `.png`, `.jpg`, `.jpeg` | Visual reference of the expected cursive amount |
+
+Only one cheque is accepted per request. Uploaded files are assigned random
+server-side names and removed after processing.
+
+### Browser example
+
 ```js
 const form = new FormData();
-form.append("file", fileInput.files[0]);
+form.append("file", chequeInput.files[0]);
 
-const res = await fetch("http://127.0.0.1:8000/scan", {
+if (signatureInput.files[0]) {
+  form.append("reference_signature", signatureInput.files[0]);
+}
+
+if (amountReferenceInput.files[0]) {
+  form.append("reference_amount", amountReferenceInput.files[0]);
+}
+
+const response = await fetch("http://127.0.0.1:8000/scan", {
   method: "POST",
   body: form,
 });
-const data = await res.json();
+
+const payload = await response.json();
+if (!response.ok) {
+  throw new Error(payload.detail ?? "Cheque processing failed");
+}
 ```
 
-#### Success response — `200`
+Do not set `Content-Type` manually when sending `FormData`; the browser must add
+the multipart boundary.
+
+## Success response (`200`)
+
+The top-level object contains exactly `status`, `extracted_data`, and
+`validation`:
 
 ```json
 {
   "status": "success",
   "extracted_data": {
-    "micr_code":      { "value": "123456789", "confidence": 91.2 },
-    "date":           { "value": "12/05/2026", "confidence": 88.4 },
-    "payee":          { "value": "JOHN DOE", "confidence": 76.0 },
-    "amount":         { "value": "1,250.00", "confidence": 94.5 },
-    "cheque_number":  { "value": "000452", "confidence": 90.1 },
-    "bank_name":      { "value": "", "confidence": 0.0 }
+    "micr_code": {
+      "value": "073902766",
+      "confidence": 100.0
+    },
+    "date": {
+      "value": "Feb. 25, 2015",
+      "confidence": 100.0
+    },
+    "payee": {
+      "value": "Cathy Johnson",
+      "confidence": 100.0
+    },
+    "amount": {
+      "value": "One hundred and 00/100",
+      "confidence": 100.0
+    },
+    "cheque_number": {
+      "value": "001001",
+      "confidence": 100.0
+    },
+    "bank_name": {
+      "value": "FNB",
+      "confidence": 100.0
+    }
   },
   "validation": {
     "is_signed": true,
@@ -84,69 +115,59 @@ const data = await res.json();
 }
 ```
 
-Field notes:
-- Every field under `extracted_data` always has the shape
-  `{ "value": string, "confidence": number }`. `value` is `""` and
-  `confidence` is `0.0` when that field wasn't detected on the cheque, or
-  OCR found nothing readable in it — **this is not itself an error**,
-  just "no data for this field". Render it as "not detected" rather than
-  blank/crashing.
-- `confidence` is Tesseract's average word-confidence, **0–100** (not
-  0–1).
-- `is_signed`: boolean heuristic based on ink coverage in the detected
-  signature region. `false` can mean either "genuinely unsigned" or
-  "signature region wasn't detected at all" — the two aren't currently
-  distinguished in the response.
-- `amount_tamper_flag` / `payee_tamper_flag`: boolean heuristics (edge
-  density in the region is abnormally high). These are **not**
-  forensic-grade fraud detection — treat `true` as "worth a human
-  glance", not "definitely fraudulent". Do not word any UI around these
-  as a hard fraud verdict.
-- Field list may grow over time (e.g. routing number split out
-  separately) — don't assume `extracted_data` is a fixed/closed set of
-  keys; read what you need by key name and ignore unknown ones.
+### Extracted-field behavior
 
-#### Error responses
+- Every field always has `{ "value": string, "confidence": number }`.
+- A missing YOLO region is returned as `{ "value": "", "confidence": 0.0 }`.
+- A crop processed by the current TrOCR implementation returns `100.0` because
+  calibrated token/word confidence is not implemented yet. Do not display this
+  as a guarantee of correctness or build automated decisions around it.
+- TrOCR is strongest on a tight, single handwritten line. MICR digits and bank
+  logos may be inaccurate until field-specific recognizers are added.
 
-All errors come back as FastAPI's standard shape:
+### Validation behavior
+
+- `is_signed` means the extracted signature matched the uploaded reference
+  according to the SNN threshold. It defaults to `false` if either image is
+  absent or unusable.
+- `amount_tamper_flag` is `true` when the extracted amount and reference amount
+  embeddings are farther apart than the configured threshold. It defaults to
+  `false` when comparison is unavailable.
+- `payee_tamper_flag` is currently always `false`; the API has no payee-reference
+  upload yet.
+- These are visual similarity signals, not legal or financial fraud verdicts.
+
+## Error responses
+
+Errors use FastAPI's standard shape:
+
 ```json
-{ "detail": "human-readable message" }
+{
+  "detail": "Human-readable error message"
+}
 ```
 
-| Status | Meaning | Suggested UI handling |
-|---|---|---|
-| 400 | Missing file, or extension not in png/jpg/jpeg/pdf | Show inline validation error before/instead of a generic failure |
-| 503 | Backend's YOLO model isn't loaded | "Scanning temporarily unavailable" — not user-fixable, don't ask them to retry the same file |
-| 500 | Unexpected processing failure (corrupt image, decoding failure, etc.) | Generic "couldn't process this image, try another" — safe to offer retry |
+| Status | Meaning | Suggested UI behavior |
+|---:|---|---|
+| `400` | Unsupported filename extension or missing required upload | Show an inline upload error |
+| `422` | Multipart field is missing or malformed | Check the form field names |
+| `500` | Corrupt image or unexpected inference failure | Show a retry/change-image message |
+| `503` | One or more models failed during application startup | Disable scanning and show service unavailable |
 
-There is currently no request timeout enforced server-side. A single
-scan is CPU-bound (YOLO inference + OCR) and typically takes low single
-digit seconds on CPU; budget your own client-side timeout/spinner
-accordingly (e.g. 15–30s before showing a "still working…" or timeout
-state).
+## UX recommendations
 
-## Practical integration preferences
+- Allow preview, rotation, and cropping before upload.
+- Apply a client-side size limit; the backend currently validates extensions,
+  not upload byte size.
+- Use a generous timeout. CPU inference runs YOLO, several TrOCR generations,
+  and optional SNN comparisons, and is serialized server-side to limit peak
+  memory use.
+- Do not poll `/health` continuously. Check on application load and before a
+  retry after a `503`.
+- Treat a blank field as "not detected," not as an API failure.
+- Do not describe a visual mismatch as confirmed fraud.
 
-- **Preview before upload.** Since there's no batch endpoint and each
-  scan takes a few seconds, let the user preview/crop/rotate the image
-  client-side before sending it — resending a bad photo is expensive.
-- **Client-side extension/size check first.** The API only checks
-  extension, not file size — enforce a sane max upload size (e.g. 10MB)
-  on the frontend to avoid slow uploads of huge camera photos.
-- **Don't poll `/health` continuously.** Check once on load / before
-  first scan; there's no push mechanism for "model just became ready".
-- **PDF support** renders only the **first page** to an image before
-  processing (via PyMuPDF) — if a user uploads a multi-page PDF, only
-  page 1 is scanned. Word the UI/upload prompt accordingly ("upload a
-  single-page scan of the cheque"), or trim multi-page PDFs client-side.
-- **Don't build UI around exact `confidence` thresholds yet** — no
-  calibration/threshold has been agreed for "trust this value
-  automatically" vs. "flag for manual review". That decision should be
-  made jointly once real accuracy numbers exist from a properly trained
-  model, not hardcoded in the frontend independently.
+## Current backend stack
 
-## Tech stack (for context, not something you need to run)
-
-Python, FastAPI + Uvicorn, OpenCV, Ultralytics YOLOv8, Tesseract OCR
-(via `pytesseract`). See `TECHNICAL_NOTES.md` if you're curious about the
-internals.
+FastAPI, OpenCV, Ultralytics YOLOv8, PyTorch, Hugging Face Transformers with
+Microsoft TrOCR, and a shared Siamese neural network.

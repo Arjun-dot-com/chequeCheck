@@ -1,125 +1,196 @@
-# ChequeCheck — CV/ML Backend
+# ChequeCheck CV/ML Backend
 
-An AI-powered cheque scanning, field-extraction, and basic fraud-flagging
-service. This repo currently contains the **computer vision / OCR backend
-only** — a FastAPI service that takes a cheque image and returns extracted
-fields (payee, amount, date, MICR/account number, cheque number, bank name)
-plus a couple of heuristic fraud signals (signature presence, tampering
-indicators). The web frontend is built and maintained separately; see
-[`FRONTEND_NOTES.md`](FRONTEND_NOTES.md) for the API contract it should
-integrate against.
+ChequeCheck is a FastAPI service for extracting fields from cheque images and
+comparing handwritten regions with reference samples. Its processing path is:
 
-For a deeper explanation of the tech stack, why each piece was chosen, and
-how data flows through the pipeline, see
-[`TECHNICAL_NOTES.md`](TECHNICAL_NOTES.md).
+```text
+OpenCV preprocessing -> YOLOv8 ROI detection -> Microsoft TrOCR -> shared SNN
+```
 
-## Original brief
+The API accepts a cheque plus optional reference signature and handwritten
+amount images. It returns the stable response contract documented in
+[`FRONTEND_NOTES.md`](FRONTEND_NOTES.md). Implementation details and model
+limitations are in [`TECHNICAL_NOTES.md`](TECHNICAL_NOTES.md).
 
-> **Category:** Fraud Detection / OCR & AI
->
-> Design an intelligent cheque processing system that scans cheque images,
-> extracts key details via OCR (cheque number, account number,
-> routing/transit number, payee, amount, date, signature area), validates
-> authenticity against banking records, and applies fraud detection rules
-> to decide whether to approve, flag for manual review, or reject the
-> cheque.
->
-> **Expected outcome:** OCR extraction accuracy ≥ 95%, fraud detection
-> accuracy ≥ 90%, processing time < 30s/cheque, manual review reduced by
-> ≥ 50%, full audit trail.
->
-> **In scope:** image upload, OCR extraction, validation against
-> mock/actual banking records, fraud logic, approval workflow, dashboard &
-> reporting.
-> **Out of scope:** real-time payment settlement, core banking system
-> replacement, customer-facing mobile app.
+## Current capabilities
 
-This repo implements the CV/ML slice of that brief (image → structured
-data → fraud signals). The validation-against-banking-records, approval
-workflow, dashboard, and audit trail are expected to live in the backend
-service / frontend that consumes this API.
+- Loads PNG, JPG, JPEG, and single-page PDF cheque inputs.
+- Detects bank, payee, account/MICR, amount, cheque number, date, and signature
+  regions with YOLOv8.
+- Recognizes individual handwritten text crops with
+  `microsoft/trocr-base-handwritten`.
+- Uses one 128-dimensional Siamese feature extractor for both signature
+  verification and cursive amount matching.
+- Selects CUDA automatically when available and otherwise runs on CPU.
+- Loads YOLO, TrOCR, and SNN once during application startup, not per request.
+- Saves uploads under random UUID filenames and deletes them after processing.
 
-## Project status
+## Important limitations
 
-- Preprocessing (grayscale, denoise, Otsu binarization, deskew) — working.
-- YOLOv8-based region-of-interest detection for 7 cheque fields — working,
-  **but the model needs real training**. The checkpoint currently in
-  `cv_core/models/cheque_roi_extractor/weights/` was only trained for a
-  single smoke-test epoch to prove the training → inference path works
-  end-to-end; it will not detect fields reliably. Re-run
-  `train_yolo.py` with a realistic epoch count before relying on it.
-- OCR field reading via Tesseract — working, **requires the Tesseract
-  binary to be installed separately** (it's not a pip package — see
-  Setup below).
-- Fraud checks (signature-ink presence, basic tampering heuristics via
-  edge density / Laplacian variance) — working, intentionally simple
-  placeholders, not the ≥90%-accuracy fraud model described in the brief.
-- Validation against banking records, approval/review/reject workflow,
-  dashboard, reporting, audit trail — **not implemented here**; out of
-  scope for the CV/ML slice.
+- The included YOLO training artifacts came from a smoke-test training run and
+  are not production quality. Train with more labeled data before evaluating
+  detection accuracy.
+- TrOCR is a single-line handwriting recognizer. It must receive tight YOLO
+  crops; passing an entire cheque produces unreliable text.
+- The current OCR response reports `confidence: 100.0` for recognized crops as
+  a placeholder. This is not a calibrated confidence score.
+- Handwritten TrOCR is not a MICR reader. Routing/account/cheque digits need a
+  dedicated MICR model for production-grade extraction.
+- No trained SNN checkpoint or SNN training dataset is included. Until weights
+  are placed at `cv_core/models/snn/best.pt`, `/health` reports the pipeline as
+  unavailable.
+- The API performs visual comparisons only. It does not make payment decisions
+  or validate against a core banking system.
 
 ## Repository layout
 
-```
-app.py                      FastAPI app exposing POST /scan and GET /health
-train_yolo.py                Trains the YOLOv8 ROI-detector model
-dataset.yaml                 YOLO dataset config (classes + paths)
-requirements.txt             Python dependencies
-yolov8n.pt                   Pretrained YOLOv8-nano base checkpoint (auto-downloads if missing)
+```text
+app.py                         FastAPI application and multipart upload handling
+train_yolo.py                  YOLOv8 ROI-detector training entry point
+test_trocr.py                  Single handwritten-line TrOCR smoke test
+test_cheque_fields.py          Multi-field demo for the supplied cheque layout
+requirements.txt               Python dependencies
 
 cv_core/
-  pipeline.py                 Orchestrates preprocess -> detect -> OCR -> fraud checks
-  preprocessor.py              Grayscale / denoise / binarize / deskew
-  roi_extractor.py             YOLOv8 wrapper -> cropped regions per field
-  ocr_engine.py                Tesseract wrapper -> {value, confidence} per field
-  fraud_checker.py             Signature isolation + tampering heuristics
-  models/cheque_roi_extractor/ Trained YOLO weights + training run artifacts
-  data/samples/                Labeled sample cheque images (YOLO format) used for training
+  pipeline.py                  End-to-end orchestration
+  preprocessor.py              Image/PDF loading, denoising, binarization, deskew
+  roi_extractor.py             YOLOv8 inference and field crops
+  ocr_engine.py                Microsoft TrOCR wrapper
+  snn_model.py                 Siamese CNN, contrastive loss, inference wrapper
+  fraud_checker.py             Signature and cursive-amount SNN checks
+  data/samples/                YOLO images and labels
+  models/cheque_roi_extractor/ Local YOLO training output
+
+validation/                    Existing business-rule/audit utilities
+frontend/                      Frontend assets
+tests/                         Validation tests
 ```
 
 ## Setup
 
-1. Create and activate a virtual environment, then install dependencies:
-   ```bash
-   python -m venv venv
-   venv\Scripts\activate        # Windows
-   pip install -r requirements.txt
-   ```
-2. Install the Tesseract OCR binary (separate from the `pytesseract` pip
-   package):
-   - Windows: https://github.com/UB-Mannheim/tesseract/wiki, then ensure
-     the install directory is on your `PATH` (or set
-     `pytesseract.pytesseract.tesseract_cmd` explicitly).
-   - macOS: `brew install tesseract`
-   - Linux: `apt-get install tesseract-ocr`
-3. Train the ROI-detection model (see below) — required before the API
-   can serve real predictions.
-4. Run the API:
-   ```bash
-   uvicorn app:app --reload
-   ```
+Python 3.10 or newer is required.
 
-## Training the ROI detector
+### Windows PowerShell
 
-```bash
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+The project pins `transformers` to the 4.x API because the TrOCR checkpoint's
+tokenizer is not compatible with the Transformers 5.x loading behavior observed
+in this project. No Tesseract installation is required.
+
+The first TrOCR run downloads `microsoft/trocr-base-handwritten` from Hugging
+Face and caches it in the current user's Hugging Face cache. The unauthenticated
+request warning is harmless for this public model; an `HF_TOKEN` is only needed
+for higher Hub rate limits.
+
+## Required model assets
+
+### YOLO detector
+
+`ROIExtractor` expects:
+
+```text
+cv_core/models/cheque_roi_extractor/weights/best.pt
+```
+
+Train it with:
+
+```powershell
 python train_yolo.py
 ```
 
-This fine-tunes a YOLOv8-nano model on the labeled samples in
-`cv_core/data/samples/` to detect 7 regions: `IssueBank`, `ReceiverName`,
-`AcNo`, `Amt`, `ChqNo`, `DateIss`, `Sign`. By default it runs only 2
-epochs (a quick smoke test) — increase `epochs` in `train_model()` (or
-pass it explicitly) for usable accuracy; with only ~112 labeled images,
-expect to also need more labeled data over time.
+For a non-smoke-test run:
 
-The trained weights are written to
-`cv_core/models/cheque_roi_extractor/weights/best.pt`, which is exactly
-where `ROIExtractor` (in `cv_core/roi_extractor.py`) looks for them by
-default. Re-running training overwrites this run in place (`exist_ok=True`)
-rather than creating `cheque_roi_extractor2`, `cheque_roi_extractor3`, etc.
+```powershell
+python -c "from train_yolo import train_model; train_model(epochs=50)"
+```
 
-## Testing it yourself
+The current `train.txt` and `test.txt` contain machine-specific absolute paths.
+Regenerate them after cloning or moving the repository.
 
-See the **"How to test"** section at the bottom of `TECHNICAL_NOTES.md`
-for step-by-step instructions (unit-level pipeline test, running the API,
-and hitting it with a sample cheque image via curl/Swagger UI).
+### Siamese network
+
+`FraudChecker` expects trained weights at:
+
+```text
+cv_core/models/snn/best.pt
+```
+
+The checkpoint must match `SiameseNetwork` in `cv_core/snn_model.py`. Model
+weights are ignored by Git, so provision this file separately in each runtime.
+
+## Test TrOCR by itself
+
+Use a tightly cropped handwritten line:
+
+```powershell
+python test_trocr.py "C:\path\to\image.jpeg" --crop X1 Y1 X2 Y2
+```
+
+Example for the provided `X_017.jpeg` layout:
+
+```powershell
+python test_trocr.py "C:\path\to\X_017.jpeg" --crop 380 240 1210 405
+python test_cheque_fields.py "C:\path\to\X_017.jpeg"
+```
+
+`test_cheque_fields.py` uses normalized demonstration regions for that cheque
+layout. It is not a replacement for YOLO and will not generalize to arbitrary
+layouts.
+
+## Run the API
+
+After both local checkpoints are available:
+
+```powershell
+uvicorn app:app --reload
+```
+
+Open `http://127.0.0.1:8000/docs`, or use PowerShell's `curl.exe`:
+
+```powershell
+curl.exe -F "file=@C:\path\cheque.jpg" `
+  -F "reference_signature=@C:\path\signature.jpg" `
+  -F "reference_amount=@C:\path\amount-reference.jpg" `
+  http://127.0.0.1:8000/scan
+```
+
+The two reference files are optional. Without them, signature and amount checks
+remain unverified and return their default `false` flags.
+
+## Response contract
+
+```json
+{
+  "status": "success",
+  "extracted_data": {
+    "micr_code": {"value": "", "confidence": 0.0},
+    "date": {"value": "", "confidence": 0.0},
+    "payee": {"value": "", "confidence": 0.0},
+    "amount": {"value": "", "confidence": 0.0},
+    "cheque_number": {"value": "", "confidence": 0.0},
+    "bank_name": {"value": "", "confidence": 0.0}
+  },
+  "validation": {
+    "is_signed": false,
+    "amount_tamper_flag": false,
+    "payee_tamper_flag": false
+  }
+}
+```
+
+## Tests
+
+```powershell
+python -m pytest -q
+python -m compileall -q app.py cv_core test_trocr.py test_cheque_fields.py
+```
+
+Before publishing, review `git status` carefully. Local checkpoints, Hugging
+Face caches, virtual environments, temporary uploads, and runtime audit logs
+must not be committed.

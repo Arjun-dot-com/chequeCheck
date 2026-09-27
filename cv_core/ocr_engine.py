@@ -1,198 +1,118 @@
-import cv2
-import pytesseract
-from pytesseract import Output
-import re
+"""Transformer-based optical character recognition for cheque fields."""
 
-pytesseract.pytesseract.tesseract_cmd = (
-    r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-)
+from __future__ import annotations
+
+from typing import Any
+
+import cv2
+import numpy as np
+import torch
+from PIL import Image
+from transformers import TrOCRProcessor, VisionEncoderDecoderModel
+
+
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+DEFAULT_TROCR_MODEL = "microsoft/trocr-base-handwritten"
 
 
 class OCREngine:
-    def __init__(self):
-        self.configs = {
-            "micr": "--psm 7 -c tessedit_char_whitelist=0123456789",
-            "amount_num": "--psm 7 -c tessedit_char_whitelist=0123456789.,",
-            "date": "--psm 7 -c tessedit_char_whitelist=0123456789/-",
-            "payee": "--psm 7",
-            "chq_no": "--psm 7 -c tessedit_char_whitelist=0123456789",
-            "bank_name": "--psm 7",
-        }
+    """Recognize text in YOLO-extracted cheque fields with Microsoft TrOCR.
 
-    def _variants(self, image):
-        enlarged = cv2.resize(
-            image, None, fx=4, fy=4,
-            interpolation=cv2.INTER_CUBIC
-        )
+    An application should construct one ``OCREngine`` during process startup and
+    reuse it for all requests. The processor and model are therefore loaded
+    once by the engine constructor rather than once per crop.
+    """
 
-        gray = cv2.cvtColor(enlarged, cv2.COLOR_BGR2GRAY)
+    def __init__(
+        self,
+        model_name: str = DEFAULT_TROCR_MODEL,
+        device: str | torch.device | None = None,
+    ) -> None:
+        """Load the TrOCR processor and model for inference.
 
-        otsu = cv2.threshold(
-            gray, 0, 255,
-            cv2.THRESH_BINARY + cv2.THRESH_OTSU
-        )[1]
-
-        adaptive = cv2.adaptiveThreshold(
-            gray, 255,
-            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-            cv2.THRESH_BINARY,
-            31, 11
-        )
-
-        return [enlarged, gray, otsu, adaptive]
-
-    def _read_text_and_conf(self, image, config):
-        best_text = ""
-        best_conf = 0.0
-
-        for variant in self._variants(image):
-            data = pytesseract.image_to_data(
-                variant,
-                config=config,
-                output_type=Output.DICT
-            )
-
-            words = []
-            confidences = []
-
-            for text, conf in zip(data["text"], data["conf"]):
-                text = text.strip()
-
-                try:
-                    conf = float(conf)
-                except:
-                    conf = -1
-
-                if text and conf >= 0:
-                    words.append(text)
-                    confidences.append(conf)
-
-            if words:
-                text = " ".join(words)
-                confidence = sum(confidences) / len(confidences)
-
-                if confidence > best_conf:
-                    best_text = text
-                    best_conf = confidence
-
-        return {
-            "value": best_text,
-            "confidence": round(best_conf, 2)
-        }
-
-    def _micr_fallback(self, image):
+        Args:
+            model_name: Hugging Face model identifier or local model directory.
+            device: Optional explicit inference device. When omitted, CUDA is
+                selected if available and CPU is used otherwise.
         """
-        Fallback specifically for cheque number.
-        Looks at the bottom MICR region and searches for
-        a six-digit sequence.
+        self.device = torch.device(device) if device is not None else DEVICE
+        self.processor = TrOCRProcessor.from_pretrained(model_name)
+        self.model = VisionEncoderDecoderModel.from_pretrained(model_name)
+        self.model.to(self.device)
+        self.model.eval()
+
+    @staticmethod
+    def _to_pil_rgb(crop: np.ndarray) -> Image.Image:
+        """Convert a grayscale, BGR, or BGRA OpenCV crop to an RGB PIL image.
+
+        Args:
+            crop: Non-empty image array supplied by the ROI extractor.
+
+        Returns:
+            An RGB ``PIL.Image.Image`` suitable for the TrOCR processor.
+
+        Raises:
+            ValueError: If the crop has an unsupported shape.
         """
+        if crop.ndim == 2:
+            rgb = cv2.cvtColor(crop, cv2.COLOR_GRAY2RGB)
+        elif crop.ndim == 3 and crop.shape[2] == 1:
+            rgb = cv2.cvtColor(crop[:, :, 0], cv2.COLOR_GRAY2RGB)
+        elif crop.ndim == 3 and crop.shape[2] == 3:
+            rgb = cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)
+        elif crop.ndim == 3 and crop.shape[2] == 4:
+            rgb = cv2.cvtColor(crop, cv2.COLOR_BGRA2RGB)
+        else:
+            raise ValueError("ROI must be a grayscale, BGR, or BGRA image")
 
-        h, w = image.shape[:2]
+        return Image.fromarray(np.ascontiguousarray(rgb))
 
-        # Bottom MICR band
-        crop = image[
-            int(h * 0.72):int(h * 0.98),
-            int(w * 0.05):int(w * 0.95)
-        ]
+    def _recognize(self, crop: np.ndarray) -> str:
+        """Generate text for one non-empty OpenCV image crop."""
+        image = self._to_pil_rgb(crop)
+        processor_output: Any = self.processor(images=image, return_tensors="pt")
+        pixel_values = processor_output.pixel_values.to(self.device)
 
-        enlarged = cv2.resize(
-            crop, None, fx=5, fy=5,
-            interpolation=cv2.INTER_CUBIC
-        )
+        with torch.inference_mode():
+            generated_ids = self.model.generate(pixel_values)
 
-        gray = cv2.cvtColor(enlarged, cv2.COLOR_BGR2GRAY)
+        return self.processor.batch_decode(
+            generated_ids, skip_special_tokens=True
+        )[0].strip()
 
-        variants = [
-            enlarged,
-            gray,
-            cv2.threshold(
-                gray, 0, 255,
-                cv2.THRESH_BINARY + cv2.THRESH_OTSU
-            )[1]
-        ]
+    def extract_all_text(
+        self, mapped_rois: dict[str, np.ndarray]
+    ) -> dict[str, dict[str, str | float]]:
+        """Recognize every mapped ROI and return the frontend field schema.
 
-        candidates = []
+        Args:
+            mapped_rois: Mapping from API field names to OpenCV image crops.
 
-        for variant in variants:
-            for psm in [6, 7, 8, 13]:
+        Returns:
+            Mapping of each input field to ``{"value": str, "confidence":
+            100.0}``. TrOCR's standard greedy generation does not expose a
+            calibrated word-level confidence, so confidence is fixed at 100.0.
+            Degenerate crops retain the same schema with an empty value.
 
-                text = pytesseract.image_to_string(
-                    variant,
-                    config=(
-                        f"--psm {psm} "
-                        "-c tessedit_char_whitelist=0123456789"
-                    )
-                )
+        Raises:
+            TypeError: If ``mapped_rois`` is not a dictionary or a non-null ROI
+                is not a NumPy array.
+        """
+        if not isinstance(mapped_rois, dict):
+            raise TypeError("mapped_rois must be a dictionary")
 
-                digits = re.sub(r"\D", "", text)
+        output: dict[str, dict[str, str | float]] = {}
+        for field_name, crop in mapped_rois.items():
+            if crop is None or (isinstance(crop, np.ndarray) and crop.size == 0):
+                extracted_text = ""
+            else:
+                if not isinstance(crop, np.ndarray):
+                    raise TypeError(f"ROI '{field_name}' must be a NumPy array")
+                extracted_text = self._recognize(crop)
 
-                # Find six consecutive digits
-                matches = re.findall(r"\d{6}", digits)
-
-                for match in matches:
-                    candidates.append(match)
-
-        # Prefer repeated candidate
-        if candidates:
-            counts = {}
-
-            for value in candidates:
-                counts[value] = counts.get(value, 0) + 1
-
-            best = max(
-                counts,
-                key=counts.get
-            )
-
-            return {
-                "value": best,
-                "confidence": 75.0
+            output[field_name] = {
+                "value": extracted_text,
+                "confidence": 100.0,
             }
 
-        return {
-            "value": "",
-            "confidence": 0.0
-        }
-
-    def extract_all_text(self, rois):
-
-        output = {}
-
-        for field, image in rois.items():
-
-            if image is None or image.size == 0:
-                output[field] = {
-                    "value": "",
-                    "confidence": 0.0
-                }
-                continue
-
-            config = self.configs.get(
-                field,
-                "--psm 7"
-            )
-
-            output[field] = self._read_text_and_conf(
-                image,
-                config
-            )
-
-        # MICR fallback for cheque number
-        chq_result = output.get(
-            "chq_no",
-            {"value": "", "confidence": 0}
-        )
-
-        if not chq_result["value"].strip():
-
-            print("Normal cheque-number OCR failed.")
-            print("Trying MICR fallback...")
-
-            # We need the original cheque image.
-            # This fallback is handled separately by pipeline
-            # if original image is supplied.
-        
         return output
-
-    def extract_cheque_number_from_micr(self, image):
-        return self._micr_fallback(image)
